@@ -83,7 +83,7 @@
   }
 
   .password-toggle {
-    @apply absolute right-[5%] sm:right-[20%] md:right-[25%] lg:right-[33%] top-1/2 -translate-y-1/2 text-allpurple cursor-pointer text-xl p-4;
+    @apply absolute right-[5%] sm:right-[20%] md:right-[25%] lg:right-[33%] top-1/2 -translate-y-1/2 text-allpurple cursor-pointer text-xl rounded-xl p-4;
   }
 
   .responsive-one {

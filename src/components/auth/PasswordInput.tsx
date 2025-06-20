@@ -22,6 +22,13 @@ const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
             onChange(e.target.value);
         };
 
+        const handleKeyDown = (e: React.KeyboardEvent<HTMLSpanElement>) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault(); // Prevent default behavior (e.g., scrolling on Space)
+                setShowPassword((prev) => !prev);
+            }
+        };
+
         return (
             <Tooltip.Root open={showTooltip}>
                 <Tooltip.Trigger asChild>
@@ -43,6 +50,7 @@ const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
                             role="button"
                             tabIndex={0}
                             onClick={() => setShowPassword(!showPassword)}
+                            onKeyDown={handleKeyDown}
                             aria-label={showPassword ? "Hide password" : "Show password"}
                         >
                             {showPassword ? <Eye size={20} /> : <EyeOff size={20} />}
