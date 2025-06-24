@@ -1,5 +1,7 @@
 "use client";
 
+import CustomCard from "@/components/CustomCard";
+import LocationSelect from "@/components/LocationSelect";
 import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,7 +12,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+// import { useAuthStore } from "@/context/authStore";
+
 export default function HomePage() {
+  // const { userToken } = useAuthStore();
+  // console.log("User Token:", userToken);
+
   return (
     <>
       <div
@@ -39,16 +46,15 @@ export default function HomePage() {
         </div>
       </div>
 
-      <section className="w-full min-h-screen bg-allsnowflake grid items-center justify-center">
-        <div className="w-[90vw] md:w-[80vw] lg:w-[60vw] bg-white border rounded-md p-5">
+      <section className="w-full min-h-screen bg-allsnowflake flex flex-col items-center justify-center py-20">
+        <div className="w-[90vw] md:w-[80vw] lg:w-[70vw] bg-white border rounded-md p-5">
           {/* Desktop Layout - Joined Selects (sm and larger) */}
           <div className="hidden sm:flex gap-4 items-center">
             {/* Joined Select Container */}
-            <div className="flex flex-1 bg-purple-100 border border-purple-200 rounded-sm overflow-hidden min-w-0">
-              {/* Category Select */}
-              <div className="flex-1 min-w-0 border-r border-purple-200">
+            <div className="flex flex-1 bg-[#EBE8FF] rounded-sm overflow-hidden min-w-0 py-2 items-center">
+              <div className="flex-1 min-w-0 border-r-2 border-gray-300">
                 <Select>
-                  <SelectTrigger className="w-full p-5 bg-transparent border-none rounded-none text-gray-800 font-medium shadow-none hover:bg-purple-150 focus:ring-0 focus:border-none px-3">
+                  <SelectTrigger className="w-full px-5 py-3 bg-transparent border-none rounded-none text-allcharcoal text-md shadow-none hover:bg-purple-150 focus:ring-0 focus:border-none">
                     <SelectValue placeholder="Select Category" />
                   </SelectTrigger>
                   <SelectContent>
@@ -58,27 +64,13 @@ export default function HomePage() {
                 </Select>
               </div>
 
-              {/* Location Select */}
-              <div className="flex-1 min-w-0 border-r border-purple-200">
-                <Select>
-                  <SelectTrigger className="w-full p-5 bg-transparent border-none rounded-none text-gray-800 font-medium shadow-none hover:bg-purple-150 focus:ring-0 focus:border-none px-3">
-                    <SelectValue placeholder="Select Location" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="online">Online</SelectItem>
-                    <SelectItem value="new-york">New York</SelectItem>
-                    <SelectItem value="san-francisco">San Francisco</SelectItem>
-                    <SelectItem value="london">London</SelectItem>
-                    <SelectItem value="toronto">Toronto</SelectItem>
-                    <SelectItem value="sydney">Sydney</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="flex-1 min-w-0 border-r-2 border-gray-300">
+                <LocationSelect />
               </div>
 
-              {/* Course Select */}
               <div className="flex-1 min-w-0">
                 <Select>
-                  <SelectTrigger className="w-full p-5 bg-transparent border-none rounded-none text-gray-800 font-medium shadow-none hover:bg-purple-150 focus:ring-0 focus:border-none px-3">
+                  <SelectTrigger className="w-full px-5 py-3 bg-transparent border-none rounded-none text-allcharcoal text-md shadow-none hover:bg-purple-150 focus:ring-0 focus:border-none">
                     <SelectValue placeholder="Select Course" />
                   </SelectTrigger>
                   <SelectContent>
@@ -95,9 +87,8 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Search Button */}
             <div className="flex-shrink-0">
-              <Button className="py-5 px-8 bg-indigo-600 hover:bg-indigo-700 text-white rounded-sm transition-colors duration-200 shadow-none border-0">
+              <Button className="py-6 px-8 bg-indigo-600 hover:bg-indigo-700 text-white rounded-sm transition-colors duration-200 shadow-none border-0">
                 Search
               </Button>
             </div>
@@ -105,11 +96,11 @@ export default function HomePage() {
 
           {/* Mobile Layout - Stacked Selects (smaller than sm) */}
           <div className="flex sm:hidden flex-col gap-3">
-            <div className="flex flex-1 bg-purple-100 border border-purple-200 rounded-sm overflow-hidden min-w-0">
+            <div className="flex flex-1 bg-[#EBE8FF] rounded-sm overflow-hidden min-w-0 py-2">
               {/* Category Select */}
-              <div className="flex-1 min-w-0 border-r border-purple-200">
+              <div className="flex-1 min-w-0 border-r-2 border-gray-300">
                 <Select>
-                  <SelectTrigger className="w-full p-5 bg-transparent border-none rounded-none text-gray-800 font-medium shadow-none hover:bg-purple-150 focus:ring-0 focus:border-none px-3">
+                  <SelectTrigger className="w-full px-5 py-4 bg-transparent border-none rounded-none text-gray-800 font-medium shadow-none hover:bg-purple-150 focus:ring-0 focus:border-none">
                     <SelectValue placeholder="Category" />
                   </SelectTrigger>
                   <SelectContent>
@@ -120,26 +111,14 @@ export default function HomePage() {
               </div>
 
               {/* Location Select */}
-              <div className="flex-1 min-w-0 border-r border-purple-200">
-                <Select>
-                  <SelectTrigger className="w-full p-5 bg-transparent border-none rounded-none text-gray-800 font-medium shadow-none hover:bg-purple-150 focus:ring-0 focus:border-none px-3">
-                    <SelectValue placeholder="Location" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="online">Online</SelectItem>
-                    <SelectItem value="new-york">New York</SelectItem>
-                    <SelectItem value="san-francisco">San Francisco</SelectItem>
-                    <SelectItem value="london">London</SelectItem>
-                    <SelectItem value="toronto">Toronto</SelectItem>
-                    <SelectItem value="sydney">Sydney</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="flex-1 min-w-0 border-r-2 border-gray-300">
+                <LocationSelect />
               </div>
 
               {/* Course Select */}
               <div className="flex-1 min-w-0">
                 <Select>
-                  <SelectTrigger className="w-full p-5 bg-transparent border-none rounded-none text-gray-800 font-medium shadow-none hover:bg-purple-150 focus:ring-0 focus:border-none px-3">
+                  <SelectTrigger className="w-full px-5 py-4 bg-transparent border-none rounded-none text-gray-800 font-medium shadow-none hover:bg-purple-150 focus:ring-0 focus:border-none">
                     <SelectValue placeholder="Course" />
                   </SelectTrigger>
                   <SelectContent>
@@ -157,17 +136,28 @@ export default function HomePage() {
             </div>
 
             <div className="w-full mt-2">
-              <Button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white  rounded-sm transition-colors duration-200 shadow-none border-0">
+              <Button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-sm transition-colors duration-200 shadow-none border-0">
                 Search
               </Button>
             </div>
           </div>
         </div>
 
-        <div className="content">
-          <div className="container flex justify-center items-center py-10">
-            content will be displayed here
+        <div className="w-[90vw] md:w-[90vw] lg:w-[90vw] flex justify-center items-center pt-10">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <CustomCard />
+            <CustomCard />
+            <CustomCard />
+            <CustomCard />
+            <CustomCard />
+            <CustomCard />
+            <CustomCard />
+            <CustomCard />
           </div>
+        </div>
+
+        <div className="w-[90vw] md:w-[80vw] lg:w-[70vw] flex justify-center items-center py-10">
+          <LocationSelect />
         </div>
       </section>
 
