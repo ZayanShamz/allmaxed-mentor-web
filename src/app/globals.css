@@ -90,6 +90,10 @@
     @apply w-[90vw] md:w-[70vw] lg:w-[60vw];
   }
 
+  .responsive-two {
+    @apply w-[90vw] md:w-[60vw] lg:w-[60vw];
+  }
+
   /* Responsive Text */
   .title-subtext {
     @apply px-5 text-[clamp(12px,3vw,20px)] text-center text-[#686868] cursor-default;
