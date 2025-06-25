@@ -39,7 +39,7 @@ export default function Navbar() {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 100); // Change opacity after scrolling 100px
+      setIsScrolled(window.scrollY > 1); // Change opacity after scrolling 100px
     };
 
     window.addEventListener("scroll", handleScroll);
@@ -49,10 +49,10 @@ export default function Navbar() {
   return (
     <nav
       className={`fixed w-full z-20 top-0 start-0 transition-all duration-300 ${
-        isScrolled ? "bg-allcharcoal" : "bg-transparent"
+        isScrolled ? "bg-allcharcoal p-3 " : "bg-transparent py-5"
       }`}
     >
-      <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-3">
+      <div className="max-w-screen-2xl flex flex-wrap items-center justify-between mx-auto px-5">
         {/* Logo */}
         <Link
           href="/home"

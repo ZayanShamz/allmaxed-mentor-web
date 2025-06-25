@@ -103,6 +103,10 @@
     @apply text-[clamp(20px,4vw,32px)] font-bold w-full whitespace-nowrap cursor-default;
   }
 
+  .title-text-1 {
+    @apply text-[clamp(20px,4vw,32px)] whitespace-nowrap;
+  }
+
   /* Responsive Containers */
   .subtitle-container {
     @apply max-sm:w-[90%] max-md:w-[60%] max-lg:w-[50%] lg:w-[35%] flex items-center w-full;

@@ -32,9 +32,6 @@ export default function AuthWrapper({
         "/waiting",
       ];
 
-      // protected routes (only for approved users)
-      const protectedRoutes = ["/home"];
-
       // Allow access to public routes regardless of token
       if (publicRoutes.includes(pathname)) {
         setIsChecking(false);
@@ -81,12 +78,14 @@ export default function AuthWrapper({
         const status = user.status;
 
         if (status === "approved") {
-          // Approved users can access protected routes, redirect to /home otherwise
-          if (!protectedRoutes.includes(pathname)) {
+          // Approved users can access any page except semiPublicRoutes
+          if (semiPublicRoutes.includes(pathname)) {
             if (pathname === "/waiting") {
               toast.success("Welcome To Almax'd");
+              router.push("/home");
+            } else {
+              router.push("/home");
             }
-            router.push("/home");
           }
         } else if (status === "rejected") {
           toast.error(
@@ -95,8 +94,11 @@ export default function AuthWrapper({
           reset();
           router.push("/login");
         } else {
+          // Unapproved users (pending status) can only access semiPublicRoutes
           if (!semiPublicRoutes.includes(pathname)) {
-            toast.error("Unauthorized access. Please complete your profile.");
+            toast.error(
+              "Unauthorized access. Please complete your profile by logging in."
+            );
             router.push("/login");
           }
         }

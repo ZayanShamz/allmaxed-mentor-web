@@ -17,34 +17,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-
-const locations = [
-  { value: "calicut", label: "Calicut" },
-  { value: "kannur", label: "Kannur" },
-  { value: "kasaragod", label: "Kasaragod" },
-  { value: "vadakara", label: "Vadakara" },
-  { value: "thalassery", label: "Thalassery" },
-  { value: "payyanur", label: "Payyanur" },
-  { value: "koyilandy", label: "Koyilandy" },
-  { value: "mananthavady", label: "Mananthavady" },
-  { value: "kalpetta", label: "Kalpetta" },
-  { value: "sulthanbathery", label: "Sulthan Bathery" },
-  { value: "perambra", label: "Perambra" },
-  { value: "kozhikode", label: "Kozhikode" },
-  { value: "malappuram", label: "Malappuram" },
-  { value: "nilambur", label: "Nilambur" },
-  { value: "tirur", label: "Tirur" },
-  { value: "manjeri", label: "Manjeri" },
-  { value: "perinthalmanna", label: "Perinthalmanna" },
-  { value: "pattambi", label: "Pattambi" },
-  { value: "palakkad", label: "Palakkad" },
-  { value: "ottapalam", label: "Ottapalam" },
-  { value: "shornur", label: "Shornur" },
-  { value: "angamaly", label: "Angamaly" },
-  { value: "ernakulam", label: "Ernakulam" },
-  { value: "thrissur", label: "Thrissur" },
-  { value: "chalakkudy", label: "Chalakkudy" },
-];
+import locations from "@/lib/locations.json";
 
 export default function LocationSelect() {
   const [open, setOpen] = useState(false);
@@ -67,7 +40,7 @@ export default function LocationSelect() {
   const placeholder = isSmallScreen ? "Location" : "Select Location";
 
   return (
-    <Select>
+    <Select disabled>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <SelectTrigger

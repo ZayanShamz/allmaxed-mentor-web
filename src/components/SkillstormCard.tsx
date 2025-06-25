@@ -1,22 +1,24 @@
 import React from "react";
 import { MapPin, Users } from "lucide-react";
 
-interface CustomCardProps {
-  title?: string;
+interface SkillstormProps {
+  topic?: string;
   appliedCount?: number;
   location?: string;
   date?: string;
-  skillTag?: string;
-  levelTag?: string;
+  level_required?: string;
+  duration?: string;
+  pay?: string;
 }
 
-const CustomCard: React.FC<CustomCardProps> = ({
-  title = "Design Thinking or something",
-  appliedCount = 10,
-  location = "St. Bones Engineering College Kazhakoottam Trivandrum",
-  date = "09 NOV",
-  skillTag = "UI/UX Designing",
-  levelTag = "Expert",
+const SkillstormCard: React.FC<SkillstormProps> = ({
+  topic,
+  appliedCount,
+  location,
+  date,
+  level_required,
+  duration,
+  pay,
 }) => {
   return (
     <div className="justify-center items-center bg-white rounded-lg border border-gray-200 p-5 hover:shadow-lg transition-shadow duration-300 max-w-sm cursor-pointer min-h-[200px] lg:min-w-[300px]">
@@ -24,13 +26,13 @@ const CustomCard: React.FC<CustomCardProps> = ({
         {/* Card Header */}
         <div className="mb-4">
           <h3 className="text-2xl font-semibold text-allpurple leading-tight">
-            {title}
+            {topic}
           </h3>
         </div>
 
         {/* Location */}
         <div className="flex items-start text-gray-500 mb-4">
-          <MapPin className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0" />
+          <MapPin className="w-4 h-4 mr-2 flex-shrink-0" />
           <span className="text-sm leading-tight">{location}</span>
         </div>
 
@@ -44,12 +46,15 @@ const CustomCard: React.FC<CustomCardProps> = ({
         </div>
 
         {/* Tags */}
-        <div className="flex flex-wrap gap-2">
+        <div className="flex gap-2 justify-start w-full">
           <span className="px-3 py-1 bg-[#EBE8FF] text-allcharcoal text-sm font-medium rounded-full">
-            {skillTag}
+            {level_required}
           </span>
           <span className="px-3 py-1 bg-[#EBE8FF] text-allcharcoal text-sm font-medium rounded-full">
-            {levelTag}
+            {duration}
+          </span>
+          <span className="px-3 py-1 bg-allpurple text-allsnowflake text-sm font-medium rounded-full">
+            {pay}/hr
           </span>
         </div>
       </div>
@@ -57,4 +62,4 @@ const CustomCard: React.FC<CustomCardProps> = ({
   );
 };
 
-export default CustomCard;
+export default SkillstormCard;

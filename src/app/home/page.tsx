@@ -2,7 +2,11 @@
 
 import { useState, useEffect } from "react";
 import axios from "axios";
-import CustomCard from "@/components/CustomCard";
+import Link from "next/link";
+import { useAuthStore } from "@/context/authStore";
+
+import AllmaxedCard from "@/components/AllmaxedCard";
+import SkillstormCard from "@/components/SkillstormCard";
 import LocationSelect from "@/components/LocationSelect";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -14,7 +18,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
 import {
   Pagination,
   PaginationContent,
@@ -24,11 +27,9 @@ import {
   PaginationLink,
 } from "@/components/ui/pagination";
 
-import { useAuthStore } from "@/context/authStore";
-
-// Define the interface for card data
-interface CardData {
-  topic: string;
+interface AllmaxedCardData {
+  id: string;
+  title: string;
   appliedCount: number;
   location: string;
   date: string;
@@ -36,16 +37,29 @@ interface CardData {
   level_required: string;
 }
 
+interface SkillstormCardData {
+  id: string;
+  topic: string;
+  appliedCount: number;
+  location: string;
+  date: string;
+  level_required: string;
+  duration: string;
+  pay: string;
+}
+
 export default function HomePage() {
   const { userToken } = useAuthStore();
   console.log("User Token:", userToken);
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [cardData, setCardData] = useState<CardData[]>([]);
+  const [cardData, setCardData] = useState<
+    AllmaxedCardData[] | SkillstormCardData[]
+  >([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [cardsPerPage, setCardsPerPage] = useState(9);
-  const [selectedCategory, setSelectedCategory] = useState("skillstorm");
+  const [selectedCategory, setSelectedCategory] = useState("allmaxed");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -99,23 +113,59 @@ export default function HomePage() {
 
   const displayedCards = cardData
     .slice(startIndex, endIndex)
-    .map((card, index) => (
-      <CustomCard
-        key={startIndex + index}
-        title={card.topic}
-        appliedCount={startIndex + index || 0}
-        location={card.location}
-        date={new Date(card.date).toLocaleDateString("en-US", {
-          day: "2-digit",
-          month: "short",
-        })}
-        skillTag={card.description}
-        levelTag={
-          card.level_required.charAt(0).toUpperCase() +
-          card.level_required.slice(1)
-        }
-      />
-    ));
+    .map((card, index) => {
+      if (selectedCategory === "allmaxed") {
+        const allmaxedCard = card as AllmaxedCardData;
+        // console.log("allmaxedCard :", allmaxedCard.id);
+        return (
+          <Link
+            href={`home/programs/${allmaxedCard.id}`}
+            key={startIndex + index}
+          >
+            <AllmaxedCard
+              key={startIndex + index}
+              title={allmaxedCard.title}
+              appliedCount={startIndex + index || 0}
+              location={allmaxedCard.location}
+              date={new Date(allmaxedCard.date).toLocaleDateString("en-US", {
+                day: "2-digit",
+                month: "short",
+              })}
+              description={allmaxedCard.description}
+              level_required={
+                allmaxedCard.level_required.charAt(0).toUpperCase() +
+                allmaxedCard.level_required.slice(1)
+              }
+            />
+          </Link>
+        );
+      } else {
+        const skillstormCard = card as SkillstormCardData;
+        return (
+          <Link
+            href={`home/workshops/${skillstormCard.id}`}
+            key={startIndex + index}
+          >
+            <SkillstormCard
+              key={startIndex + index}
+              topic={skillstormCard.topic}
+              appliedCount={startIndex + index || 0}
+              location={skillstormCard.location}
+              date={new Date(skillstormCard.date).toLocaleDateString("en-US", {
+                day: "2-digit",
+                month: "short",
+              })}
+              level_required={
+                skillstormCard.level_required.charAt(0).toUpperCase() +
+                skillstormCard.level_required.slice(1)
+              }
+              duration={skillstormCard.duration}
+              pay={skillstormCard.pay}
+            />
+          </Link>
+        );
+      }
+    });
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -149,7 +199,7 @@ export default function HomePage() {
         </div>
       </div>
 
-      <section className="w-full min-h-screen bg-allsnowflake flex flex-col items-center justify-center py-20">
+      <section className="w-full min-h-screen bg-allsnowflake flex flex-col items-center justify-start py-20">
         <div className="w-[90vw] md:w-[80vw] lg:w-[70vw] bg-white border rounded-md p-5">
           {/* Desktop Layout - Joined Selects (sm and larger) */}
           <div className="hidden sm:flex gap-4 items-center">
@@ -175,7 +225,7 @@ export default function HomePage() {
               </div>
 
               <div className="flex-1 min-w-0">
-                <Select>
+                <Select disabled>
                   <SelectTrigger className="w-full px-5 py-3 bg-transparent border-none rounded-none text-allcharcoal text-md shadow-none hover:bg-purple-150 focus:ring-0 focus:border-none">
                     <SelectValue placeholder="Select Course" />
                   </SelectTrigger>
@@ -226,7 +276,7 @@ export default function HomePage() {
 
               {/* Course Select */}
               <div className="flex-1 min-w-0">
-                <Select>
+                <Select disabled>
                   <SelectTrigger className="w-full px-5 py-4 bg-transparent border-none rounded-none text-gray-800 font-medium shadow-none hover:bg-purple-150 focus:ring-0 focus:border-none">
                     <SelectValue placeholder="Course" />
                   </SelectTrigger>
@@ -253,7 +303,7 @@ export default function HomePage() {
         </div>
 
         {/* Card Section */}
-        <div className="w-[90vw] md:w-[90vw] lg:w-[90vw] flex flex-col justify-center items-center pt-10">
+        <div className="w-[95vw] flex flex-col justify-center items-center pt-10">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {loading ? (
               <div className="text-center text-allcharcoal">Loading...</div>
