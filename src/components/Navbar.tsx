@@ -49,12 +49,10 @@ export default function Navbar() {
   return (
     <nav
       className={`fixed w-full z-20 top-0 start-0 transition-all duration-300 ${
-        isScrolled
-          ? "bg-black/30 backdrop-blur-xs dark:bg-gray-900/80  dark:border-gray-600"
-          : "bg-transparent"
+        isScrolled ? "bg-allcharcoal" : "bg-transparent"
       }`}
     >
-      <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
+      <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-3">
         {/* Logo */}
         <Link
           href="/home"
@@ -116,7 +114,7 @@ export default function Navbar() {
                     Partner Colleges
                   </Link>
                 </CommandItem>
-                <hr className="my-1" />
+                <hr className="border-1 border-gray-300" />
                 <CommandItem asChild>
                   <AlertDialog>
                     <AlertDialogTrigger

@@ -62,7 +62,7 @@ export default function HomePage() {
       levelTag: "Beginner",
     },
     {
-      title: "Data Science Crash Course",
+      title: "Data Science Crash Course beginner",
       appliedCount: 12,
       location: "San Francisco Campus",
       date: "25 NOV",
@@ -100,6 +100,62 @@ export default function HomePage() {
       date: "15 DEC",
       skillTag: "Cybersecurity",
       levelTag: "Expert",
+    },
+    {
+      title: "Machine Learning Intermidiate",
+      appliedCount: 6,
+      location: "New York Institute",
+      date: "20 DEC",
+      skillTag: "Machine Learning",
+      levelTag: "Beginner",
+    },
+    {
+      title: "DevOps Training",
+      appliedCount: 9,
+      location: "San Francisco Campus",
+      date: "25 DEC",
+      skillTag: "DevOps",
+      levelTag: "Intermediate",
+    },
+    {
+      title: "React Development",
+      appliedCount: 11,
+      location: "London Tech Hub",
+      date: "30 DEC",
+      skillTag: "React",
+      levelTag: "Advanced",
+    },
+    {
+      title: "Blockchain Basics",
+      appliedCount: 13,
+      location: "Sydney University",
+      date: "05 JAN",
+      skillTag: "Blockchain",
+      levelTag: "Beginner",
+    },
+    {
+      title: "Full Stack Development",
+      appliedCount: 16,
+      location: "Toronto Tech Center",
+      date: "10 JAN",
+      skillTag: "Full Stack",
+      levelTag: "Expert",
+    },
+    {
+      title: "Digital Marketing",
+      appliedCount: 7,
+      location: "Online",
+      date: "15 JAN",
+      skillTag: "Marketing",
+      levelTag: "Intermediate",
+    },
+    {
+      title: "Game Development",
+      appliedCount: 10,
+      location: "St. Bones Engineering College, Trivandrum",
+      date: "20 JAN",
+      skillTag: "Game Design",
+      levelTag: "Advanced",
     },
     {
       title: "Machine Learning Basics",
@@ -332,7 +388,7 @@ export default function HomePage() {
                       className={
                         currentPage === 1
                           ? "pointer-events-none opacity-50"
-                          : ""
+                          : "cursor-pointer"
                       }
                     />
                   </PaginationItem>
@@ -340,6 +396,7 @@ export default function HomePage() {
                     (page) => (
                       <PaginationItem key={page}>
                         <PaginationLink
+                          className="cursor-pointer"
                           onClick={() => handlePageChange(page)}
                           isActive={currentPage === page}
                         >
@@ -360,7 +417,7 @@ export default function HomePage() {
                       className={
                         currentPage === totalPages
                           ? "pointer-events-none opacity-50"
-                          : ""
+                          : "cursor-pointer"
                       }
                     />
                   </PaginationItem>
