@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import CustomCard from "@/components/CustomCard";
 import LocationSelect from "@/components/LocationSelect";
 import Navbar from "@/components/Navbar";
@@ -12,11 +13,183 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationPrevious,
+  PaginationNext,
+  PaginationLink,
+} from "@/components/ui/pagination";
+
 // import { useAuthStore } from "@/context/authStore";
 
 export default function HomePage() {
   // const { userToken } = useAuthStore();
   // console.log("User Token:", userToken);
+
+  const cardData = [
+    {
+      title: "Design Thinking Workshop",
+      appliedCount: 15,
+      location: "St. Bones Engineering College, Trivandrum",
+      date: "09 NOV",
+      skillTag: "UI/UX Designing",
+      levelTag: "Expert",
+    },
+    {
+      title: "Python Bootcamp",
+      appliedCount: 8,
+      location: "London Tech Hub",
+      date: "12 DEC",
+      skillTag: "Programming",
+      levelTag: "Intermediate",
+    },
+    {
+      title: "Graphic Design Masterclass",
+      appliedCount: 20,
+      location: "New York Institute",
+      date: "15 NOV",
+      skillTag: "Graphic Design",
+      levelTag: "Advanced",
+    },
+    {
+      title: "Web Development Basics",
+      appliedCount: 5,
+      location: "London Tech Hub",
+      date: "20 NOV",
+      skillTag: "Web Development",
+      levelTag: "Beginner",
+    },
+    {
+      title: "Data Science Crash Course",
+      appliedCount: 12,
+      location: "San Francisco Campus",
+      date: "25 NOV",
+      skillTag: "Data Science",
+      levelTag: "Intermediate",
+    },
+    {
+      title: "Mobile App Development",
+      appliedCount: 18,
+      location: "Sydney University",
+      date: "30 NOV",
+      skillTag: "Mobile Development",
+      levelTag: "Advanced",
+    },
+    {
+      title: "AI Fundamentals",
+      appliedCount: 7,
+      location: "Toronto Tech Center",
+      date: "05 DEC",
+      skillTag: "Artificial Intelligence",
+      levelTag: "Beginner",
+    },
+    {
+      title: "Cloud Computing 101",
+      appliedCount: 10,
+      location: "New Jersey",
+      date: "10 DEC",
+      skillTag: "Cloud Computing",
+      levelTag: "Intermediate",
+    },
+    {
+      title: "Cybersecurity Workshop",
+      appliedCount: 14,
+      location: "St. Bones Engineering College, Trivandrum",
+      date: "15 DEC",
+      skillTag: "Cybersecurity",
+      levelTag: "Expert",
+    },
+    {
+      title: "Machine Learning Basics",
+      appliedCount: 6,
+      location: "New York Institute",
+      date: "20 DEC",
+      skillTag: "Machine Learning",
+      levelTag: "Beginner",
+    },
+    {
+      title: "DevOps Training",
+      appliedCount: 9,
+      location: "San Francisco Campus",
+      date: "25 DEC",
+      skillTag: "DevOps",
+      levelTag: "Intermediate",
+    },
+    {
+      title: "React Development",
+      appliedCount: 11,
+      location: "London Tech Hub",
+      date: "30 DEC",
+      skillTag: "React",
+      levelTag: "Advanced",
+    },
+    {
+      title: "Blockchain Basics",
+      appliedCount: 13,
+      location: "Sydney University",
+      date: "05 JAN",
+      skillTag: "Blockchain",
+      levelTag: "Beginner",
+    },
+    {
+      title: "Full Stack Development",
+      appliedCount: 16,
+      location: "Toronto Tech Center",
+      date: "10 JAN",
+      skillTag: "Full Stack",
+      levelTag: "Expert",
+    },
+    {
+      title: "Digital Marketing",
+      appliedCount: 7,
+      location: "Online",
+      date: "15 JAN",
+      skillTag: "Marketing",
+      levelTag: "Intermediate",
+    },
+    {
+      title: "Game Development",
+      appliedCount: 10,
+      location: "St. Bones Engineering College, Trivandrum",
+      date: "20 JAN",
+      skillTag: "Game Design",
+      levelTag: "Advanced",
+    },
+  ];
+
+  // Pagination >>
+  const [currentPage, setCurrentPage] = useState(1);
+  const cardsPerPage = 9;
+  const totalCards = cardData.length;
+
+  const totalPages = Math.ceil(totalCards / cardsPerPage);
+  const startIndex = (currentPage - 1) * cardsPerPage;
+  const endIndex = startIndex + cardsPerPage;
+
+  const displayedCards = cardData
+    .slice(startIndex, endIndex)
+    .map((card, index) => (
+      <CustomCard
+        key={startIndex + index}
+        title={card.title}
+        appliedCount={card.appliedCount || 0}
+        location={card.location}
+        date={new Date(card.date).toLocaleDateString("en-US", {
+          day: "2-digit",
+          month: "short",
+        })}
+        skillTag={card.skillTag}
+        levelTag={
+          card.levelTag.charAt(0).toUpperCase() + card.levelTag.slice(1)
+        }
+      />
+    ));
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
 
   return (
     <>
@@ -143,21 +316,58 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="w-[90vw] md:w-[90vw] lg:w-[90vw] flex justify-center items-center pt-10">
+        <div className="w-[90vw] md:w-[90vw] lg:w-[90vw] flex flex-col justify-center items-center pt-10">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <CustomCard />
-            <CustomCard />
-            <CustomCard />
-            <CustomCard />
-            <CustomCard />
-            <CustomCard />
-            <CustomCard />
-            <CustomCard />
+            {displayedCards}
           </div>
-        </div>
-
-        <div className="w-[90vw] md:w-[80vw] lg:w-[70vw] flex justify-center items-center py-10">
-          <LocationSelect />
+          {totalCards > cardsPerPage && (
+            <div className="flex justify-center mt-4">
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious
+                      onClick={() =>
+                        handlePageChange(currentPage > 1 ? currentPage - 1 : 1)
+                      }
+                      className={
+                        currentPage === 1
+                          ? "pointer-events-none opacity-50"
+                          : ""
+                      }
+                    />
+                  </PaginationItem>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                    (page) => (
+                      <PaginationItem key={page}>
+                        <PaginationLink
+                          onClick={() => handlePageChange(page)}
+                          isActive={currentPage === page}
+                        >
+                          {page}
+                        </PaginationLink>
+                      </PaginationItem>
+                    )
+                  )}
+                  <PaginationItem>
+                    <PaginationNext
+                      onClick={() =>
+                        handlePageChange(
+                          currentPage < totalPages
+                            ? currentPage + 1
+                            : totalPages
+                        )
+                      }
+                      className={
+                        currentPage === totalPages
+                          ? "pointer-events-none opacity-50"
+                          : ""
+                      }
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            </div>
+          )}
         </div>
       </section>
 

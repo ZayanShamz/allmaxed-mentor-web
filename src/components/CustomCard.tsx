@@ -1,5 +1,12 @@
 import React from "react";
 import { MapPin, Users } from "lucide-react";
+// import {
+//   Card,
+//   CardContent,
+//   CardFooter,
+//   CardHeader,
+//   CardTitle,
+// } from "@/components/ui/card";
 
 interface CustomCardProps {
   title?: string;
@@ -19,37 +26,70 @@ const CustomCard: React.FC<CustomCardProps> = ({
   levelTag = "Expert",
 }) => {
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-8 hover:shadow-lg transition-shadow duration-300 max-w-sm cursor-pointer">
-      {/* Card Header */}
-      <div className="flex items-center justify-start mb-4">
-        <h3 className="text-2xl font-semibold text-allpurple hover:text-blue-700">
-          {title}
-        </h3>
-      </div>
+    // <Card className="flex flex-col justify-around bg-white rounded-lg border border-gray-200 p-5 hover:shadow-lg transition-shadow duration-300 max-w-sm cursor-pointer">
+    //   <CardHeader>
+    //     <CardTitle className="text-2xl font-semibold text-allpurple hover:text-blue-700">
+    //       {title}
+    //     </CardTitle>
+    //   </CardHeader>
+    //   <CardContent>
+    //     <div className="flex items-start text-gray-500 mb-4">
+    //       <MapPin className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0" />
+    //       <span className="text-sm leading-tight">{location}</span>
+    //     </div>
+    //     <div className="flex items-center justify-between mb-4">
+    //       <span className="text-lg font-bold text-black">{date}</span>
 
-      {/* Location */}
-      <div className="flex items-start text-gray-500 mb-4">
-        <MapPin className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0" />
-        <span className="text-sm leading-tight">{location}</span>
-      </div>
-
-      {/* Date */}
-      <div className="flex items-center justify-between mb-4">
-        <span className="text-lg font-bold text-black">{date}</span>
-        <div className="flex items-center text-xs text-gray-500">
-          <Users className="w-3 h-3 mr-1" />
-          <span>{appliedCount} applied</span>
+    //       <div className="flex items-center text-xs text-gray-500">
+    //         <Users className="w-3 h-3 mr-1" />
+    //         <span>{appliedCount} applied</span>
+    //       </div>
+    //     </div>
+    //   </CardContent>
+    //   <CardFooter>
+    //     <div className="flex flex-wrap gap-2">
+    //       <span className="px-3 py-1 bg-[#EBE8FF] text-allcharcoal text-sm font-medium rounded-full">
+    //         {skillTag}
+    //       </span>
+    //       <span className="px-3 py-1 bg-[#EBE8FF] text-allcharcoal text-sm font-medium rounded-full">
+    //         {levelTag}
+    //       </span>
+    //     </div>
+    //   </CardFooter>
+    // </Card>
+    <div className="w-full justify-center items-center bg-white rounded-lg border border-gray-200 p-5 hover:shadow-lg transition-shadow duration-300 max-w-sm cursor-pointer min-h-[200px]">
+      <div className="gflex flex-col h-full justify-between">
+        {/* Card Header */}
+        <div className="mb-4">
+          <h3 className="text-2xl font-semibold text-allpurple leading-tight">
+            {title}
+          </h3>
         </div>
-      </div>
 
-      {/* Tags */}
-      <div className="flex flex-wrap gap-2">
-        <span className="px-3 py-1 bg-[#EBE8FF] text-allcharcoal text-sm font-medium rounded-full">
-          {skillTag}
-        </span>
-        <span className="px-3 py-1 bg-[#EBE8FF] text-allcharcoal text-sm font-medium rounded-full">
-          {levelTag}
-        </span>
+        {/* Location */}
+        <div className="flex items-start text-gray-500 mb-4">
+          <MapPin className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0" />
+          <span className="text-sm leading-tight">{location}</span>
+        </div>
+
+        {/* Date */}
+        <div className="flex items-center justify-between mb-4">
+          <span className="text-lg font-bold text-black">{date}</span>
+          <div className="flex items-center text-xs text-gray-500">
+            <Users className="w-3 h-3 mr-1" />
+            <span>{appliedCount} applied</span>
+          </div>
+        </div>
+
+        {/* Tags */}
+        <div className="flex flex-wrap gap-2">
+          <span className="px-3 py-1 bg-[#EBE8FF] text-allcharcoal text-sm font-medium rounded-full">
+            {skillTag}
+          </span>
+          <span className="px-3 py-1 bg-[#EBE8FF] text-allcharcoal text-sm font-medium rounded-full">
+            {levelTag}
+          </span>
+        </div>
       </div>
     </div>
   );
