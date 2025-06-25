@@ -39,14 +39,18 @@ export default function Footer() {
         </div>
         <div className="flex gap-4 mt-2">
           <a
-            href="#"
+            href="https://www.instagram.com/getallmaxd?igsh=MWFiZXA1MHFjaGRyMg=="
+            target="_blank"
+            rel="noopener noreferrer"
             className="bg-white rounded-full p-2 text-black flex items-center justify-center w-10 h-10"
             aria-label="Instagram"
           >
             <Instagram className="w-5 h-5" />
           </a>
           <a
-            href="#"
+            href="https://www.linkedin.com/company/allmaxed/"
+            target="_blank"
+            rel="noopener noreferrer"
             className="bg-white rounded-full p-2 text-black flex items-center justify-center w-10 h-10"
             aria-label="LinkedIn"
           >
