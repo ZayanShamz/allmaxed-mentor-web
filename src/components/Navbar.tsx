@@ -94,7 +94,7 @@ export default function Navbar() {
                   asChild
                   className="flex md:hidden w-full p-3 cursor-pointer"
                 >
-                  <Link href="/profile" onClick={() => setAvatarOpen(false)}>
+                  <Link href="/home" onClick={() => setAvatarOpen(false)}>
                     Home
                   </Link>
                 </CommandItem>
@@ -102,7 +102,7 @@ export default function Navbar() {
                   asChild
                   className="flex md:hidden w-full p-3 cursor-pointer"
                 >
-                  <Link href="/profile" onClick={() => setAvatarOpen(false)}>
+                  <Link href="/applied" onClick={() => setAvatarOpen(false)}>
                     Applied
                   </Link>
                 </CommandItem>
