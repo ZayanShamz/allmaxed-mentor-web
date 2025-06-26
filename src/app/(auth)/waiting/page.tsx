@@ -17,12 +17,12 @@ export default function Waiting() {
 
   return (
     <>
-      <div className="flex justify-center items-center w-full h-dvh p-5">
-        <div className="w-[90vw] md:w-[70vw] lg:w-[60vw] flex flex-col justify-start items-center">
+      <div className="flex flex-col justify-center items-center w-full h-dvh p-5">
+        <div className="w-[90vw] md:w-[70vw] lg:w-[60vw] flex flex-col flex-1 justify-start items-center">
           <div className="text-h1 text-center px-10">
             Mentor Training Programme
           </div>
-          <div className="w-full sm:w-[90%] md:w-[70%] flex flex-col justify-start items-center">
+          <div className="w-full sm:w-[90%] md:w-[70%] flex flex-col justify-center items-center">
             <div className="w-full py-5">
               <p className="text-body text-allpurple leading-tight text-center">
                 All Professionals are expected to complete their initial
@@ -35,9 +35,9 @@ export default function Waiting() {
               <Image
                 src="/images/waiting.png"
                 alt="Waiting"
-                className="object-contain h-auto min-w-50 md:min-w-[50%] lg:min-w-[40%]"
-                width={150}
-                height={150}
+                className="object-contain h-auto w-50 md:w-58 lg:w-64 xl:w-74"
+                width={256}
+                height={256}
                 priority
               />
             </div>
@@ -77,14 +77,14 @@ export default function Waiting() {
               </div>
             </div>
           </div>
-          <div className="text-center mt-5">
-            <button
-              className="text-body-small text-allcharcoal underline cursor-pointer"
-              onClick={handleClick}
-            >
-              Login to different account
-            </button>
-          </div>
+        </div>
+        <div className="text-center mt-5">
+          <button
+            className="text-body text-allcharcoal underline cursor-pointer"
+            onClick={handleClick}
+          >
+            Login to different account
+          </button>
         </div>
       </div>
     </>
