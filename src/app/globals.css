@@ -154,11 +154,11 @@
   }
 
   .text-h2 {
-    @apply text-[clamp(20px,4vw,36px)] font-bold leading-tight;
+    @apply text-[clamp(26px,4vw,36px)] font-bold leading-tight;
   }
 
   .text-h3 {
-    @apply text-[clamp(18px,3.5vw,28px)] font-semibold leading-snug;
+    @apply text-[clamp(22px,3.5vw,28px)] font-semibold leading-snug;
   }
 
   .text-h4 {
@@ -166,7 +166,7 @@
   }
 
   .text-h5 {
-    @apply text-[clamp(16px,2.5vw,20px)] font-medium leading-normal;
+    @apply text-[clamp(18px,2.5vw,20px)] font-medium leading-normal;
   }
 
   .text-h6 {
@@ -183,7 +183,7 @@
   }
 
   .text-body-small {
-    @apply text-[clamp(14px,1.8vw,16px)] leading-normal;
+    @apply text-[clamp(16px,1.8vw,16px)] leading-normal;
   }
 
   /* UTILITY TEXT */

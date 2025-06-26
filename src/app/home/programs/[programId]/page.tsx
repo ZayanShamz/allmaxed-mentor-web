@@ -205,7 +205,7 @@ export default function ProgramDetailsPage() {
                 <SlashIcon />
               </BreadcrumbSeparator>
               <BreadcrumbItem>
-                <BreadcrumbPage className="text-[clamp(18px,3.5vw,28px)] text-allsnowflake cursor-default">
+                <BreadcrumbPage className="text-[clamp(22px,3.5vw,28px)] text-allsnowflake cursor-default">
                   {program?.title}
                 </BreadcrumbPage>
               </BreadcrumbItem>
@@ -222,7 +222,7 @@ export default function ProgramDetailsPage() {
                 {program?.title}
               </span>
               <span className="text-h3 mb-3">Content Overview</span>
-              <p className="text-body text-gray-600 text-justify">
+              <p className="text-body text-gray-600">
                 {program?.content_overview}
               </p>
             </div>
