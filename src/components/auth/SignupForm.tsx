@@ -10,6 +10,7 @@ import axios, { AxiosError } from "axios";
 import toast from "react-hot-toast";
 import { useAuthStore } from "@/context/authStore";
 import PasswordInput from "./PasswordInput";
+import { Button } from "../ui/button";
 
 interface FormData {
   name: string;
@@ -202,153 +203,157 @@ export default function SignupForm() {
 
   return (
     <Tooltip.Provider>
-      <div className="grid grid-rows-[1fr, auto] justify-items-center h-dvh">
-        <div className="row-span-3 responsive-one grid grid-rows-[auto,1fr] items-center">
-          <div className="h-full flex justify-center items-end overflow-hidden z-0">
-            <div className="w-[50%] sm:w-[50%] md:w-[50%] lg:w-[30%] max-w-[500px] mb-5 scale-75 h-auto aspect-[500/500] relative">
-              <Image
-                src="/images/login_logo.png"
-                alt="AllMax'd Logo"
-                className="absolute inset-0 w-full h-full object-contain"
-                fill
-                priority
-              />
+      <div className="flex flex-col items-center justify-center w-full h-dvh py-10">
+        <div className="flex flex-col flex-1 w-full items-center justify-center">
+          <div className="flex justify-center pb-5">
+            <Image
+              src="/images/login_logo.png"
+              alt="AllMax'd Logo"
+              className="object-contain h-auto w-40 md:w-48 lg:w-56 xl:w-64"
+              width={256}
+              height={256}
+              priority
+            />
+          </div>
+          <div className="responsive-one flex justify-center">
+            <div className="min-w-[90%] sm:min-w-[60%] lg:min-w-[45%] flex flex-col items-start">
+              <form className="w-full" onSubmit={handleSubmit}>
+                <div className="flex justify-center items-center w-full">
+                  <Tooltip.Root
+                    open={submitted && !!errors.name && focusedField === "name"}
+                  >
+                    <Tooltip.Trigger asChild>
+                      <input
+                        type="text"
+                        name="name"
+                        id="name"
+                        placeholder="Full Name"
+                        className={`form-input ${
+                          errors.name ? "border-red-500" : ""
+                        }`}
+                        value={formData.name}
+                        onChange={handleChange}
+                        onFocus={() => setFocusedField("name")}
+                        onBlur={() => setFocusedField(null)}
+                        ref={nameRef}
+                      />
+                    </Tooltip.Trigger>
+                    <Tooltip.Portal>
+                      <Tooltip.Content
+                        side="bottom"
+                        align="center"
+                        className="bg-red-500 text-white px-3 rounded-lg shadow-lg z-50 animate-fade-in"
+                        sideOffset={5}
+                      >
+                        {errors.name}
+                        <Tooltip.Arrow className="fill-red-500" />
+                      </Tooltip.Content>
+                    </Tooltip.Portal>
+                  </Tooltip.Root>
+                </div>
+
+                <div className="flex justify-center items-center w-full">
+                  <Tooltip.Root
+                    open={
+                      submitted && !!errors.email && focusedField === "email"
+                    }
+                  >
+                    <Tooltip.Trigger asChild>
+                      <input
+                        type="email"
+                        name="email"
+                        id="email"
+                        placeholder="Your Email"
+                        className={`form-input ${
+                          errors.email ? "border-red-500" : ""
+                        }`}
+                        value={formData.email}
+                        onChange={handleChange}
+                        onFocus={() => setFocusedField("email")}
+                        onBlur={() => setFocusedField(null)}
+                        ref={emailRef}
+                      />
+                    </Tooltip.Trigger>
+                    <Tooltip.Portal>
+                      <Tooltip.Content
+                        side="bottom"
+                        align="center"
+                        className="bg-red-500 text-white px-3 rounded-lg shadow-lg z-50 animate-fade-in"
+                        sideOffset={5}
+                      >
+                        {errors.email}
+                        <Tooltip.Arrow className="fill-red-500" />
+                      </Tooltip.Content>
+                    </Tooltip.Portal>
+                  </Tooltip.Root>
+                </div>
+
+                <div className="flex justify-center items-center w-full">
+                  <Tooltip.Root
+                    open={
+                      submitted && !!errors.phone && focusedField === "phone"
+                    }
+                  >
+                    <Tooltip.Trigger asChild>
+                      <input
+                        type="text"
+                        name="phone"
+                        id="phone"
+                        placeholder="Your Phone No"
+                        className={`form-input ${
+                          errors.phone ? "border-red-500" : ""
+                        }`}
+                        value={formData.phone}
+                        onChange={handleChange}
+                        onFocus={() => setFocusedField("phone")}
+                        onBlur={() => setFocusedField(null)}
+                        ref={phoneRef}
+                      />
+                    </Tooltip.Trigger>
+                    <Tooltip.Portal>
+                      <Tooltip.Content
+                        side="bottom"
+                        align="center"
+                        className="bg-red-500 text-white px-3 rounded-lg shadow-lg z-50 animate-fade-in"
+                        sideOffset={5}
+                      >
+                        {errors.phone}
+                        <Tooltip.Arrow className="fill-red-500" />
+                      </Tooltip.Content>
+                    </Tooltip.Portal>
+                  </Tooltip.Root>
+                </div>
+
+                <PasswordInput
+                  value={formData.password}
+                  onChange={handlePasswordChange}
+                  hasError={!!errors.password}
+                  showTooltip={
+                    submitted &&
+                    !!errors.password &&
+                    focusedField === "password"
+                  }
+                  errorMessage={errors.password}
+                  onFocus={() => setFocusedField("password")}
+                  onBlur={() => setFocusedField(null)}
+                  ref={passwordRef}
+                />
+                <div className="flex justify-center items-center py-5">
+                  <Button
+                    type="submit"
+                    className="w-[45%] py-5 bg-allpurple text-allsnowflake text-lg border border-allcharcoal cursor-pointer transition duration-300 ease-in-out hover:bg-[#0022ff] hover:text-white"
+                    disabled={signUpMutation.isPending}
+                  >
+                    {signUpMutation.isPending ? "Submitting..." : "Sign Up"}
+                  </Button>
+                </div>
+              </form>
             </div>
           </div>
-
-          <form
-            className="w-full grid grid-rows-5 items-center z-10"
-            onSubmit={handleSubmit}
-          >
-            <div className="flex justify-center items-center w-full">
-              <Tooltip.Root
-                open={submitted && !!errors.name && focusedField === "name"}
-              >
-                <Tooltip.Trigger asChild>
-                  <input
-                    type="text"
-                    name="name"
-                    id="name"
-                    placeholder="Full Name"
-                    className={`form-input ${
-                      errors.name ? "border-red-500" : ""
-                    }`}
-                    value={formData.name}
-                    onChange={handleChange}
-                    onFocus={() => setFocusedField("name")}
-                    onBlur={() => setFocusedField(null)}
-                    ref={nameRef}
-                  />
-                </Tooltip.Trigger>
-                <Tooltip.Portal>
-                  <Tooltip.Content
-                    side="bottom"
-                    align="center"
-                    className="bg-red-500 text-white px-3 rounded-lg shadow-lg z-50 animate-fade-in"
-                    sideOffset={5}
-                  >
-                    {errors.name}
-                    <Tooltip.Arrow className="fill-red-500" />
-                  </Tooltip.Content>
-                </Tooltip.Portal>
-              </Tooltip.Root>
-            </div>
-
-            <div className="flex justify-center items-center w-full">
-              <Tooltip.Root
-                open={submitted && !!errors.email && focusedField === "email"}
-              >
-                <Tooltip.Trigger asChild>
-                  <input
-                    type="email"
-                    name="email"
-                    id="email"
-                    placeholder="Your Email"
-                    className={`form-input ${
-                      errors.email ? "border-red-500" : ""
-                    }`}
-                    value={formData.email}
-                    onChange={handleChange}
-                    onFocus={() => setFocusedField("email")}
-                    onBlur={() => setFocusedField(null)}
-                    ref={emailRef}
-                  />
-                </Tooltip.Trigger>
-                <Tooltip.Portal>
-                  <Tooltip.Content
-                    side="bottom"
-                    align="center"
-                    className="bg-red-500 text-white px-3 rounded-lg shadow-lg z-50 animate-fade-in"
-                    sideOffset={5}
-                  >
-                    {errors.email}
-                    <Tooltip.Arrow className="fill-red-500" />
-                  </Tooltip.Content>
-                </Tooltip.Portal>
-              </Tooltip.Root>
-            </div>
-
-            <div className="flex justify-center items-center w-full">
-              <Tooltip.Root
-                open={submitted && !!errors.phone && focusedField === "phone"}
-              >
-                <Tooltip.Trigger asChild>
-                  <input
-                    type="text"
-                    name="phone"
-                    id="phone"
-                    placeholder="Your Phone No"
-                    className={`form-input ${
-                      errors.phone ? "border-red-500" : ""
-                    }`}
-                    value={formData.phone}
-                    onChange={handleChange}
-                    onFocus={() => setFocusedField("phone")}
-                    onBlur={() => setFocusedField(null)}
-                    ref={phoneRef}
-                  />
-                </Tooltip.Trigger>
-                <Tooltip.Portal>
-                  <Tooltip.Content
-                    side="bottom"
-                    align="center"
-                    className="bg-red-500 text-white px-3 rounded-lg shadow-lg z-50 animate-fade-in"
-                    sideOffset={5}
-                  >
-                    {errors.phone}
-                    <Tooltip.Arrow className="fill-red-500" />
-                  </Tooltip.Content>
-                </Tooltip.Portal>
-              </Tooltip.Root>
-            </div>
-
-            <PasswordInput
-              value={formData.password}
-              onChange={handlePasswordChange}
-              hasError={!!errors.password}
-              showTooltip={
-                submitted && !!errors.password && focusedField === "password"
-              }
-              errorMessage={errors.password}
-              onFocus={() => setFocusedField("password")}
-              onBlur={() => setFocusedField(null)}
-              ref={passwordRef}
-            />
-
-            <div className="flex justify-center items-center">
-              <button
-                type="submit"
-                className="form-button"
-                disabled={signUpMutation.isPending}
-              >
-                {signUpMutation.isPending ? "Submitting..." : "Sign Up"}
-              </button>
-            </div>
-          </form>
         </div>
-        <div className="responsive-one row-start-4 flex justify-center items-end pb-10">
+        <div className="w-full text-center">
           <span>
-            <span className="text-allcharcoal">Already a Mentor?</span>{" "}
+            <span className="text-allcharcoal">Not Yet a Mentor? </span>
             <Link
               href="/login"
               className="text-allpurple hover:underline focus:underline"

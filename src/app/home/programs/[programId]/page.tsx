@@ -182,20 +182,20 @@ export default function ProgramDetailsPage() {
                 <BreadcrumbLink asChild>
                   <Link
                     href="/home"
-                    className="title-text-1 text-gray-400 hover:text-gray-200 hover:underline underline-offset-4 transition"
+                    className="text-h3 font-normal text-gray-400 hover:text-gray-200 hover:underline underline-offset-4 transition"
                   >
                     Allmax&apos;d
                   </Link>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator>
-                <SlashIcon />
+                <SlashIcon className="h-20" />
               </BreadcrumbSeparator>
               <BreadcrumbItem>
                 <BreadcrumbLink asChild>
                   <Link
                     href="/home"
-                    className="title-text-1 text-gray-400 hover:text-gray-200 hover:underline underline-offset-4"
+                    className="text-h3 font-normal text-gray-400 hover:text-gray-200 hover:underline underline-offset-4"
                   >
                     Programs
                   </Link>
@@ -205,7 +205,7 @@ export default function ProgramDetailsPage() {
                 <SlashIcon />
               </BreadcrumbSeparator>
               <BreadcrumbItem>
-                <BreadcrumbPage className="title-text-1 text-allsnowflake cursor-default">
+                <BreadcrumbPage className="text-[clamp(18px,3.5vw,28px)] text-allsnowflake cursor-default">
                   {program?.title}
                 </BreadcrumbPage>
               </BreadcrumbItem>
@@ -215,100 +215,110 @@ export default function ProgramDetailsPage() {
       </div>
 
       <section className="w-full bg-allsnowflake flex flex-col items-center justify-start py-10 md:py-20">
-        <div className="w-[90vw] md:max-w-screen-xl flex flex-col flex-wrap md:flex-row justify-between items-stretch mb-5">
-          <div className="w-full md:w-[60%] flex flex-col justify-between items-center">
+        <div className="flex flex-col flex-wrap md:flex-row justify-between items-stretch w-[90vw] md:max-w-screen-xl md:gap-10 mb-5">
+          <div className="w-full md:flex-1 flex flex-col justify-start items-center">
             <div className="w-full flex flex-col items-start justify-start mb-10">
-              <span className="text-[clamp(24px,3vw,32px)] text-allpurple mb-5 font-semibold">
+              <span className="text-h2 text-allpurple mb-5">
                 {program?.title}
               </span>
-              <span className="text-[clamp(18px,3vw,28px)] font-semibold mb-3">
-                Content Overview
-              </span>
-              <p className="text-[clamp(12px,3vw,18px)] text-gray-600 text-justify">
+              <span className="text-h3 mb-3">Content Overview</span>
+              <p className="text-body text-gray-600 text-justify">
                 {program?.content_overview}
               </p>
             </div>
             <div className="w-full flex flex-col items-start justify-center mb-10 md:mb-5">
-              <span className="text-[clamp(18px,3vw,28px)] font-semibold mb-5">
-                Previous Summary
-              </span>
+              <span className="text-h3 mb-5">Previous Summary</span>
               <div className="flex justify-start items-center w-full h-[75px] bg-white rounded-lg">
                 <span className="text-gray-500 p-5 ">
                   Previous summary Here
                 </span>
               </div>
             </div>
+            <div className="hidden md:flex justify-center items-center w-full md:justify-start mt-5">
+              {hasApplied ? (
+                <Button
+                  className="px-10 py-5 rounded-sm border-2 border-red-500 text-red-500 text-lg bg-transparent cursor-pointer hover:bg-red-500 hover:text-allsnowflake"
+                  onClick={handleWithdrawal}
+                  disabled={isLoading || !!error}
+                >
+                  Withdraw Application
+                </Button>
+              ) : (
+                <Button
+                  className="px-10 py-5 rounded-sm border-2 border-allpurple text-allpurple text-lg bg-transparent cursor-pointer hover:bg-allpurple hover:text-allsnowflake"
+                  onClick={handleApply}
+                  disabled={isLoading || !!error}
+                >
+                  Apply Now
+                </Button>
+              )}
+            </div>
           </div>
 
-          <div className="w-full md:w-[30%] bg-white rounded-lg flex flex-col items-start justify-center mb-5 p-5">
+          <div className="w-full md:w-auto md:min-w-[300px] md:max-w-[35%] bg-white rounded-lg flex flex-col items-start justify-center mb-5 p-5">
             <div className="mb-5">
-              <h3 className="text-[clamp(18px,3vw,26px)] font-semibold text-allcharcoal">
-                Content Overview
-              </h3>
+              <h3 className="text-h3 text-allcharcoal">Content Overview</h3>
             </div>
             <div className="mb-4 leading-tight">
-              <h5 className="text-[clamp(16px,3vw,18px)] font-semibold">
-                Date & Time
-              </h5>
-              <span className="text-[clamp(12px,3vw,14px)] text-allpurple">
-                {program?.date}, {program?.start_time}
+              <h5 className="text-h5 font-semibold">Date & Time</h5>
+              <span className="text-body-small leading-tight text-allpurple">
+                {program?.date
+                  ? new Date(program.date).toLocaleDateString("en-US", {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                    })
+                  : ""}
+                , {program?.start_time}
               </span>
             </div>
             <div className="mb-4 leading-tight">
-              <h5 className="text-[clamp(16px,3vw,18px)] font-semibold">
-                Topic
-              </h5>
-              <span className="text-[clamp(12px,3vw,14px)] text-allpurple p-0">
+              <h5 className="text-h5 font-semibold">Topic</h5>
+              <span className="text-body-small leading-tight text-allpurple p-0">
                 {program?.title}
               </span>
             </div>
             <div className="mb-4 leading-tight">
-              <h5 className="text-[clamp(16px,3vw,18px)] font-semibold">
-                Course
-              </h5>
-              <span className="text-[clamp(12px,3vw,14px)] text-allpurple p-0">
+              <h5 className="text-h5 font-semibold">Course</h5>
+              <span className="text-body-small leading-tight text-allpurple p-0">
                 {program?.course}
               </span>
             </div>
             <div className="mb-4 leading-tight">
-              <h5 className="text-[clamp(16px,3vw,18px)] font-semibold">
-                Course Level
-              </h5>
-              <span className="text-[clamp(12px,3vw,14px)] text-allpurple p-0">
+              <h5 className="text-h5 font-semibold">Course Level</h5>
+              <span className="text-body-small leading-tight text-allpurple p-0">
                 {program?.level_required}
               </span>
             </div>
             <div className="mb-4 leading-tight">
-              <h5 className="text-[clamp(16px,3vw,18px)] font-semibold">
-                Payment
-              </h5>
-              <span className="text-[clamp(12px,3vw,14px)] text-allpurple p-0">
+              <h5 className="text-h5 font-semibold">Payment</h5>
+              <span className="text-body-small leading-tight text-allpurple p-0">
                 {program?.pay}
               </span>
             </div>
             <div className="mb-4 leading-tight">
-              <h5 className="text-[clamp(16px,3vw,18px)] font-semibold">
-                Session Duration
-              </h5>
-              <span className="text-[clamp(12px,3vw,14px)] text-allpurple p-0">
+              <h5 className="text-h5 font-semibold">Session Duration</h5>
+              <span className="text-body-small leading-tight text-allpurple p-0">
                 {program?.duration}
               </span>
             </div>
             <div className="mb-4 leading-tight">
-              <h5 className="text-[clamp(16px,3vw,18px)] font-semibold">
-                College Name
-              </h5>
-              <span className="text-[clamp(12px,3vw,14px)] text-allpurple leading-3">
+              <h5 className="text-h5 font-semibold">College Name</h5>
+              <span className="text-body-small leading-tight text-allpurple ">
                 SAFI Institute of Advanced Study (Autonomous), Vazhayoor,
                 Ramannattukara
               </span>
             </div>
             <div className="mb-4 leading-tight">
-              <h5 className="text-[clamp(16px,3vw,18px)] font-semibold">
-                Location
-              </h5>
-              <span className="text-[clamp(12px,3vw,14px)] text-allpurple p-0 cursor-pointer">
-                <a href="#" target="_self">
+              <h5 className="text-h5 font-semibold">Location</h5>
+              <span className="text-body-small leading-tight text-allpurple p-0 cursor-pointer underline">
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                    program?.location || ""
+                  )}`}
+                  rel="noopener noreferrer"
+                  target="_blank"
+                >
                   {program?.location}
                 </a>
               </span>
@@ -316,11 +326,10 @@ export default function ProgramDetailsPage() {
           </div>
         </div>
 
-        <div className="w-[90vw] md:max-w-screen-xl flex flex-col justify-center items-center md:items-start">
+        <div className="md:hidden w-[90vw] md:max-w-screen-xl flex flex-col justify-center items-center md:items-start">
           <div className="flex justify-center items-center w-full md:justify-start">
             {hasApplied ? (
               <Button
-                variant={"outline"}
                 className="px-10 py-5 rounded-sm border-2 border-red-500 text-red-500 text-lg bg-transparent cursor-pointer hover:bg-red-500 hover:text-allsnowflake"
                 onClick={handleWithdrawal}
                 disabled={isLoading || !!error}
@@ -329,7 +338,6 @@ export default function ProgramDetailsPage() {
               </Button>
             ) : (
               <Button
-                variant={"outline"}
                 className="px-10 py-5 rounded-sm border-2 border-allpurple text-allpurple text-lg bg-transparent cursor-pointer hover:bg-allpurple hover:text-allsnowflake"
                 onClick={handleApply}
                 disabled={isLoading || !!error}

@@ -1,7 +1,29 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
+@font-face {
+  font-family: "SK Modernist";
+  src: url("/fonts/Sk-Modernist-Regular.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "SK Modernist";
+  src: url("/fonts/Sk-Modernist-Bold.otf") format("opentype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "SK Modernist Mono";
+  src: url("/fonts/Sk-Modernist-Mono.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
 
 @theme inline {
   --color-background: var(--background);
@@ -12,9 +34,11 @@
   --color-allcharcoal: #1e1e1e;
   --color-allsnowflake: #f0f0ef;
 
-  --font-sans: "Sk-Modernist", sans-serif;
-  --font-serif: "Sk-Modernist", serif;
-  --font-mono: "Sk-Modernist", monospace;
+  --font-sans: "SK Modernist", ui-sans-serif, system-ui, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-mono: "SK Modernist Mono", ui-monospace, SFMono-Regular, "SF Mono",
+    Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -52,8 +76,11 @@
 }
 
 @layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
   body {
-    font-family: var(--font-serif);
+    @apply bg-background text-foreground font-serif;
     background-color: var(--bg-snowflake);
   }
 
@@ -63,27 +90,27 @@
   h4,
   h5,
   h6 {
-    font-family: var(--font-serif);
+    @apply font-serif font-bold;
   }
 
   code,
   pre {
-    font-family: var(--font-mono);
+    @apply font-mono;
   }
 }
 
 @layer components {
   /* Form Items */
   .form-input {
-    @apply max-sm:w-[90%] max-md:w-[60%] max-lg:w-[50%] lg:w-[35%] border-[2px] border-dashed border-black rounded-[10px] py-4 pl-5 my-2 text-allpurple placeholder-allpurple focus:border-dashed focus:border-allpurple focus:shadow-xl focus:outline-none focus:ring-0 transition duration-300 ease-in-out;
-  }
-
-  .form-button {
-    @apply inline-block max-sm:w-[45%] max-md:w-[30%] max-lg:w-[20%] lg:w-[20%] w-fit border border-allcharcoal text-center py-2 my-2 rounded-lg bg-allpurple text-allsnowflake cursor-pointer transition duration-300 ease-in-out hover:bg-[#0022ff];
+    @apply w-full border-[2px] border-dashed border-black rounded-md py-4 px-5 my-2 text-allpurple text-lg placeholder-allpurple focus:border-dashed focus:border-allpurple focus:shadow-xl focus:outline-none focus:ring-0 transition duration-300 ease-in-out;
   }
 
   .password-toggle {
-    @apply absolute right-[5%] sm:right-[20%] md:right-[25%] lg:right-[33%] top-1/2 -translate-y-1/2 text-allpurple cursor-pointer text-xl rounded-xl p-4;
+    @apply absolute right-[5%] sm:right-[20%] md:right-[20%] lg:right-[28%] top-1/2 -translate-y-1/2 text-allpurple cursor-pointer text-xl rounded-xl p-4 border-2;
+  }
+
+  .form-button {
+    @apply py-5 bg-allpurple text-allsnowflake text-lg border border-allcharcoal cursor-pointer transition duration-300 ease-in-out hover:bg-[#0022ff] hover:text-white;
   }
 
   .responsive-one {
@@ -96,7 +123,7 @@
 
   /* Responsive Text */
   .title-subtext {
-    @apply px-5 text-[clamp(12px,3vw,20px)] text-center text-[#686868] cursor-default;
+    @apply px-5 text-[clamp(16px,3vw,22px)] cursor-default;
   }
 
   .subtitle-text {
@@ -110,6 +137,82 @@
   /* Responsive Containers */
   .subtitle-container {
     @apply max-sm:w-[90%] max-md:w-[60%] max-lg:w-[50%] lg:w-[35%] flex items-center w-full;
+  }
+
+  /* HERO/MAIN TITLES */
+  .text-hero {
+    @apply text-[clamp(28px,8vw,72px)] font-bold leading-tight tracking-tight;
+  }
+
+  .text-hero-secondary {
+    @apply text-[clamp(24px,6vw,56px)] font-bold leading-tight;
+  }
+
+  /* HEADINGS */
+  .text-h1 {
+    @apply text-[clamp(24px,5vw,36px)] font-bold leading-10;
+  }
+
+  .text-h2 {
+    @apply text-[clamp(20px,4vw,36px)] font-bold leading-tight;
+  }
+
+  .text-h3 {
+    @apply text-[clamp(18px,3.5vw,28px)] font-semibold leading-snug;
+  }
+
+  .text-h4 {
+    @apply text-[clamp(16px,3vw,24px)] font-semibold leading-normal;
+  }
+
+  .text-h5 {
+    @apply text-[clamp(16px,2.5vw,20px)] font-medium leading-normal;
+  }
+
+  .text-h6 {
+    @apply text-[clamp(14px,2vw,18px)] font-medium leading-normal;
+  }
+
+  /* BODY TEXT */
+  .text-body-large {
+    @apply text-[clamp(18px,2.5vw,22px)] leading-relaxed;
+  }
+
+  .text-body {
+    @apply text-[clamp(16px,2vw,18px)] leading-normal;
+  }
+
+  .text-body-small {
+    @apply text-[clamp(14px,1.8vw,16px)] leading-normal;
+  }
+
+  /* UTILITY TEXT */
+  .text-caption {
+    @apply text-[clamp(12px,1.5vw,14px)] leading-normal opacity-75;
+  }
+
+  .text-meta {
+    @apply text-[clamp(12px,1.2vw,13px)] leading-tight opacity-60;
+  }
+
+  .text-button {
+    @apply text-[clamp(14px,2vw,16px)] font-medium leading-none;
+  }
+
+  /* Font Utility Classes */
+  .font-sk-regular {
+    font-family: "SK Modernist", sans-serif;
+    font-weight: 400;
+  }
+
+  .font-sk-bold {
+    font-family: "SK Modernist", sans-serif;
+    font-weight: 700;
+  }
+
+  .font-sk-mono {
+    font-family: "SK Modernist Mono", monospace;
+    font-weight: 400;
   }
 }
 
@@ -180,13 +283,4 @@
   --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.551 0.027 264.364);
-}
-
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
 }

@@ -21,8 +21,8 @@ const SkillstormCard: React.FC<SkillstormProps> = ({
   pay,
 }) => {
   return (
-    <div className="justify-center items-center bg-white rounded-lg border border-gray-200 p-5 hover:shadow-lg transition-shadow duration-300 max-w-sm cursor-pointer min-h-[200px] lg:min-w-[300px]">
-      <div className="flex flex-col h-full justify-between p-3">
+    <div className="flex justify-start items-stretch bg-white rounded-lg border border-gray-200 px-8 pt-8 pb-3 hover:shadow-lg transition-shadow duration-300 max-w-sm cursor-pointer min-h-[200px] lg:min-w-[300px] min-w-[70vw] sm:min-w-[60vw] md:min-w-0">
+      <div className="flex flex-col w-full h-full justify-between ">
         {/* Card Header */}
         <div className="mb-4">
           <h3 className="text-2xl font-semibold text-allpurple leading-tight">
@@ -39,14 +39,10 @@ const SkillstormCard: React.FC<SkillstormProps> = ({
         {/* Date */}
         <div className="flex items-center justify-between mb-4">
           <span className="text-lg font-bold text-black">{date}</span>
-          <div className="flex items-center text-xs text-gray-500">
-            <Users className="w-3 h-3 mr-1" />
-            <span>{appliedCount} applied</span>
-          </div>
         </div>
 
         {/* Tags */}
-        <div className="flex gap-2 justify-start w-full">
+        <div className="flex gap-2 justify-start w-full mb-3">
           <span className="px-3 py-1 bg-[#EBE8FF] text-allcharcoal text-sm font-medium rounded-full">
             {level_required}
           </span>
@@ -56,6 +52,12 @@ const SkillstormCard: React.FC<SkillstormProps> = ({
           <span className="px-3 py-1 bg-allpurple text-allsnowflake text-sm font-medium rounded-full">
             {pay}/hr
           </span>
+        </div>
+        <div className="flex gap-2 justify-end w-full">
+          <div className="flex items-center text-xs text-gray-400">
+            <Users className="w-3 h-3 mr-1" />
+            <span>{appliedCount} applied</span>
+          </div>
         </div>
       </div>
     </div>

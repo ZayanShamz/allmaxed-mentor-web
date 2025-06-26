@@ -303,8 +303,8 @@ export default function HomePage() {
         </div>
 
         {/* Card Section */}
-        <div className="w-[95vw] flex flex-col justify-center items-center pt-10">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="lg:min-w-[70vw] md:min-w-[80vw] max-w-[90vw] flex flex-col justify-center items-center pt-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 w-full gap-4">
             {loading ? (
               <div className="text-center text-allcharcoal">Loading...</div>
             ) : error ? (
