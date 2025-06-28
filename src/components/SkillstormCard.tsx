@@ -83,7 +83,7 @@ const SkillstormCard: React.FC<SkillstormProps> = ({
   };
 
   return (
-    <div className="flex flex-col justify-center bg-white rounded-lg border border-gray-200 hover:shadow-lg transition-shadow duration-300 max-w-sm cursor-pointer lg:min-w-[300px] min-w-[70vw] sm:min-w-[60vw] md:min-w-0 h-full">
+    <div className="flex flex-col justify-center bg-white rounded-xl border border-gray-200 hover:shadow-lg transition-shadow duration-300 max-w-sm cursor-pointer lg:min-w-[300px] min-w-[70vw] sm:min-w-[60vw] md:min-w-0 h-full">
       <Link
         href={`home/workshops/${workshopId}`}
         key={workshopId}
@@ -140,7 +140,7 @@ const SkillstormCard: React.FC<SkillstormProps> = ({
       <div
         className={`${
           pathname === "/applied"
-            ? "w-full flex justify-center items-center border-t border-gray-600 py-3 mt-auto"
+            ? "w-full flex justify-center items-center border-t border-gray-600 py-5 mt-auto"
             : "hidden"
         }`}
       >

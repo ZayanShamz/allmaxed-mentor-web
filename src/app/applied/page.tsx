@@ -40,20 +40,21 @@ interface SkillstormData {
 }
 
 export default function Appliedpage() {
+  // states
   const [activeTab, setActiveTab] = useState<"allmaxed" | "skillstorm">(
     "allmaxed"
   );
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [cardsPerPage, setCardsPerPage] = useState(9);
+
   const [allmaxedData, setAllmaxedData] = useState<AllmaxedData[]>([]);
   const [skillstormData, setSkillstormData] = useState<SkillstormData[]>([]);
 
-  const userToken = useAuthStore((state) => state.userToken);
-  const userId = useAuthStore((state) => state.mentorData?.user_id);
-  console.log(userId, userToken);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const [cardsPerPage, setCardsPerPage] = useState(9);
+  const userToken = useAuthStore((state) => state.userToken);
+  // const userId = useAuthStore((state) => state.mentorData?.user_id);
 
   const totalAllmaxedCards = allmaxedData.length;
   const totalAllmaxedPages = Math.ceil(totalAllmaxedCards / cardsPerPage);
@@ -64,49 +65,51 @@ export default function Appliedpage() {
   const startIndex = (currentPage - 1) * cardsPerPage;
   const endIndex = startIndex + cardsPerPage;
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [activeTab]);
-
+  // Handling cards per page based on screen size
   useEffect(() => {
     const handleResize = () => {
       setCardsPerPage(window.innerWidth < 1024 ? 8 : 9);
     };
 
     handleResize();
-
     window.addEventListener("resize", handleResize);
-
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  // Reset Pagination on tab chnge
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
 
-  // Allmaxed Cards:
-
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchAllData = async () => {
+      if (!userToken) return;
+
       setLoading(true);
       setError(null);
+
       try {
-        const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/long_term_programs`,
-          {
-            headers: { Authorization: `Bearer ${userToken}` },
-          }
-        );
-        console.log("API Response:", response.data);
+        // Fetch both datasets in parallel
+        const [allmaxedResponse, skillstormResponse] = await Promise.all([
+          axios.get(
+            `${process.env.NEXT_PUBLIC_API_URL}/api/long_term_programs`,
+            { headers: { Authorization: `Bearer ${userToken}` } }
+          ),
+          axios.get(
+            `${process.env.NEXT_PUBLIC_API_URL}/api/short_term_programs`,
+            { headers: { Authorization: `Bearer ${userToken}` } }
+          ),
+        ]);
 
-        // Sorting by date (oldest to latest)
-        const allmaxedSortedData = (response.data as AllmaxedData[]).sort(
-          (a: AllmaxedData, b: AllmaxedData) => {
-            return new Date(a.date).getTime() - new Date(b.date).getTime();
-          }
-        );
+        console.log("Allmaxed API Response:", allmaxedResponse.data);
+        console.log("Skillstorm API Response:", skillstormResponse.data);
 
-        setAllmaxedData(allmaxedSortedData);
+        setAllmaxedData(allmaxedResponse.data);
+        setSkillstormData(skillstormResponse.data);
       } catch (error: unknown) {
         if (error instanceof Error) {
           console.error("Error fetching data:", error.message);
@@ -119,7 +122,8 @@ export default function Appliedpage() {
         setLoading(false);
       }
     };
-    fetchData();
+
+    fetchAllData();
   }, [userToken]);
 
   const allmaxedCards = allmaxedData
@@ -146,43 +150,6 @@ export default function Appliedpage() {
         />
       );
     });
-
-  // Skillstorm Cards
-
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/short_term_programs`,
-          {
-            headers: { Authorization: `Bearer ${userToken}` },
-          }
-        );
-        console.log("API Response:", response.data);
-
-        // Sorting by date (oldest to latest)
-        const skillstormSortedData = (response.data as SkillstormData[]).sort(
-          (a: SkillstormData, b: SkillstormData) => {
-            return new Date(a.date).getTime() - new Date(b.date).getTime();
-          }
-        );
-        setSkillstormData(skillstormSortedData);
-      } catch (error: unknown) {
-        if (error instanceof Error) {
-          console.error("Error fetching data:", error.message);
-          setError(error.message);
-        } else {
-          console.error("Unexpected error:", error);
-          setError("An unexpected error occurred");
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, [userToken]);
 
   const skillstormCards = skillstormData
     .slice(startIndex, endIndex)
@@ -275,7 +242,7 @@ export default function Appliedpage() {
           </div>
         </div>
 
-        <div className="w-full min-h-dvh flex justify-center max-w-screen-2xl px-5 mt-8">
+        <div className="lg:min-w-[70vw] md:min-w-[80vw] max-w-[90vw] min-h-dvh flex justify-center px-5 mt-8">
           <div className="relative overflow-hidden">
             {/* Allmaxed Tab Content */}
             <div
@@ -285,7 +252,7 @@ export default function Appliedpage() {
                   : "opacity-0 translate-x-full absolute inset-0"
               }`}
             >
-              <div className="lg:min-w-[70vw] md:min-w-[80vw] max-w-[90vw] flex flex-col justify-center items-center pt-10">
+              <div className="w-full flex flex-col justify-center items-center pt-10">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 w-full gap-4 auto-rows-fr">
                   {loading ? (
                     <div className="md:col-span-2 lg:col-span-3 text-center text-lg text-allcharcoal">
@@ -369,7 +336,7 @@ export default function Appliedpage() {
                   : "opacity-0 -translate-x-full absolute inset-0"
               }`}
             >
-              <div className="lg:min-w-[70vw] md:min-w-[80vw] max-w-[90vw] flex flex-col justify-center items-center pt-10">
+              <div className="w-full flex flex-col justify-center items-center pt-10">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 w-full gap-4 auto-rows-fr">
                   {loading ? (
                     <div className="md:col-span-2 lg:col-span-3 text-lg w-full text-center text-allcharcoal">
