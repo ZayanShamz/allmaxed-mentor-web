@@ -167,7 +167,7 @@ export default function WorkshopDetailsPage() {
                 url('/images/college_bg.png')
               `,
           backgroundSize: "cover",
-          backgroundPosition: "center",
+          backgroundPosition: "top",
           backgroundRepeat: "no-repeat",
         }}
       >

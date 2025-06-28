@@ -99,7 +99,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               Applied
             </a>
             <a
-              href="/home"
+              href="/colleges"
               className="block px-4 py-3 text-allcharcoal text-center border-b border-gray-200"
               onClick={onClose}
             >

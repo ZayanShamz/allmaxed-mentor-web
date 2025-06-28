@@ -79,24 +79,7 @@ export default function HomePage() {
         });
         console.log("API Response:", response.data);
 
-        // Sorting by date (oldest to latest)
-        const sortedData =
-          selectedCategory === "allmaxed"
-            ? (response.data as AllmaxedCardData[]).sort(
-                (a: AllmaxedCardData, b: AllmaxedCardData) => {
-                  return (
-                    new Date(a.date).getTime() - new Date(b.date).getTime()
-                  );
-                }
-              )
-            : (response.data as SkillstormCardData[]).sort(
-                (a: SkillstormCardData, b: SkillstormCardData) => {
-                  return (
-                    new Date(a.date).getTime() - new Date(b.date).getTime()
-                  );
-                }
-              );
-        setCardData(sortedData);
+        setCardData(response.data);
       } catch (error: unknown) {
         if (error instanceof Error) {
           console.error("Error fetching data:", error.message);

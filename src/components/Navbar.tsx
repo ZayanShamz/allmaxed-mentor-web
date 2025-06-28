@@ -191,7 +191,13 @@ export default function Navbar() {
                 </Link>
               </li>
               <li>
-                <Link href="#" className="block px-3 text-white">
+                <Link
+                  href="/colleges"
+                  className={`block px-3  text-white ${
+                    pathname === "/colleges" ? "snow-glow" : ""
+                  }`}
+                  aria-current="page"
+                >
                   Colleges
                 </Link>
               </li>

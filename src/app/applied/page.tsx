@@ -275,7 +275,7 @@ export default function Appliedpage() {
           </div>
         </div>
 
-        <div className="w-full flex justify-center max-w-screen-2xl px-5 mt-8">
+        <div className="w-full min-h-dvh flex justify-center max-w-screen-2xl px-5 mt-8">
           <div className="relative overflow-hidden">
             {/* Allmaxed Tab Content */}
             <div
@@ -288,13 +288,15 @@ export default function Appliedpage() {
               <div className="lg:min-w-[70vw] md:min-w-[80vw] max-w-[90vw] flex flex-col justify-center items-center pt-10">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 w-full gap-4 auto-rows-fr">
                   {loading ? (
-                    <div className="text-center text-allcharcoal">
+                    <div className="md:col-span-2 lg:col-span-3 text-center text-lg text-allcharcoal">
                       Loading...
                     </div>
                   ) : error ? (
-                    <div className="text-center text-red-500">{error}</div>
+                    <div className="md:col-span-2 lg:col-span-3 text-lg text-center text-red-500">
+                      {error}
+                    </div>
                   ) : allmaxedData.length === 0 ? (
-                    <div className="text-center text-gray-500">
+                    <div className="md:col-span-2 lg:col-span-3 text-lg text-center text-gray-500">
                       No data available for this category.
                     </div>
                   ) : (
@@ -370,14 +372,16 @@ export default function Appliedpage() {
               <div className="lg:min-w-[70vw] md:min-w-[80vw] max-w-[90vw] flex flex-col justify-center items-center pt-10">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 w-full gap-4 auto-rows-fr">
                   {loading ? (
-                    <div className="text-center text-allcharcoal">
+                    <div className="md:col-span-2 lg:col-span-3 text-lg w-full text-center text-allcharcoal">
                       Loading...
                     </div>
                   ) : error ? (
-                    <div className="text-center text-red-500">{error}</div>
+                    <div className="md:col-span-2 lg:col-span-3 text-lg text-center text-red-500">
+                      {error}
+                    </div>
                   ) : skillstormData.length === 0 ? (
-                    <div className="text-center text-gray-500">
-                      No data available for this category.
+                    <div className="md:col-span-2 lg:col-span-3 text-lg w-full text-center text-gray-500">
+                      No applications to show.
                     </div>
                   ) : (
                     skillstormCards
