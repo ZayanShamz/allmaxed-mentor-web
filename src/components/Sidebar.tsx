@@ -92,7 +92,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               Profile
             </a>
             <a
-              href="/home"
+              href="/applied"
               className="block px-4 py-3 text-allcharcoal text-center border-b border-gray-200"
               onClick={onClose}
             >
@@ -147,7 +147,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             className="p-2 rounded-full hover:bg-gray-100 transition-colors duration-200"
             aria-label="Close sidebar"
           >
-            <X size={20} className="text-allcharcoal" />
+            <X size={24} className="text-allcharcoal" />
           </button>
         </div>
       </div>
