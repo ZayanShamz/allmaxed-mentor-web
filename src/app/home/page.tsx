@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import axios from "axios";
-import Link from "next/link";
 import { useAuthStore } from "@/context/authStore";
 
 import AllmaxedCard from "@/components/AllmaxedCard";
@@ -50,7 +49,7 @@ interface SkillstormCardData {
 
 export default function HomePage() {
   const { userToken } = useAuthStore();
-  console.log("User Token:", userToken);
+  // console.log("User Token:", userToken);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [cardData, setCardData] = useState<
@@ -60,6 +59,10 @@ export default function HomePage() {
   const [error, setError] = useState<string | null>(null);
   const [cardsPerPage, setCardsPerPage] = useState(9);
   const [selectedCategory, setSelectedCategory] = useState("allmaxed");
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedCategory]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -75,7 +78,25 @@ export default function HomePage() {
           headers: { Authorization: `Bearer ${userToken}` },
         });
         console.log("API Response:", response.data);
-        setCardData(response.data);
+
+        // Sorting by date (oldest to latest)
+        const sortedData =
+          selectedCategory === "allmaxed"
+            ? (response.data as AllmaxedCardData[]).sort(
+                (a: AllmaxedCardData, b: AllmaxedCardData) => {
+                  return (
+                    new Date(a.date).getTime() - new Date(b.date).getTime()
+                  );
+                }
+              )
+            : (response.data as SkillstormCardData[]).sort(
+                (a: SkillstormCardData, b: SkillstormCardData) => {
+                  return (
+                    new Date(a.date).getTime() - new Date(b.date).getTime()
+                  );
+                }
+              );
+        setCardData(sortedData);
       } catch (error: unknown) {
         if (error instanceof Error) {
           console.error("Error fetching data:", error.message);
@@ -90,8 +111,6 @@ export default function HomePage() {
     };
     fetchData();
   }, [userToken, selectedCategory]);
-
-  console.log(cardData);
 
   // Change cardsPerPage 9 - 8 based on screen size
   useEffect(() => {
@@ -118,51 +137,42 @@ export default function HomePage() {
         const allmaxedCard = card as AllmaxedCardData;
         // console.log("allmaxedCard :", allmaxedCard.id);
         return (
-          <Link
-            href={`home/programs/${allmaxedCard.id}`}
+          <AllmaxedCard
+            programId={allmaxedCard.id}
             key={startIndex + index}
-          >
-            <AllmaxedCard
-              key={startIndex + index}
-              title={allmaxedCard.title}
-              appliedCount={startIndex + index || 0}
-              location={allmaxedCard.location}
-              date={new Date(allmaxedCard.date).toLocaleDateString("en-US", {
-                day: "2-digit",
-                month: "short",
-              })}
-              description={allmaxedCard.description}
-              level_required={
-                allmaxedCard.level_required.charAt(0).toUpperCase() +
-                allmaxedCard.level_required.slice(1)
-              }
-            />
-          </Link>
+            title={allmaxedCard.title}
+            appliedCount={startIndex + index || 0}
+            location={allmaxedCard.location}
+            date={new Date(allmaxedCard.date).toLocaleDateString("en-US", {
+              day: "2-digit",
+              month: "short",
+            })}
+            description={allmaxedCard.description}
+            level_required={
+              allmaxedCard.level_required.charAt(0).toUpperCase() +
+              allmaxedCard.level_required.slice(1)
+            }
+          />
         );
       } else {
         const skillstormCard = card as SkillstormCardData;
         return (
-          <Link
-            href={`home/workshops/${skillstormCard.id}`}
+          <SkillstormCard
             key={startIndex + index}
-          >
-            <SkillstormCard
-              key={startIndex + index}
-              topic={skillstormCard.topic}
-              appliedCount={startIndex + index || 0}
-              location={skillstormCard.location}
-              date={new Date(skillstormCard.date).toLocaleDateString("en-US", {
-                day: "2-digit",
-                month: "short",
-              })}
-              level_required={
-                skillstormCard.level_required.charAt(0).toUpperCase() +
-                skillstormCard.level_required.slice(1)
-              }
-              duration={skillstormCard.duration}
-              pay={skillstormCard.pay}
-            />
-          </Link>
+            topic={skillstormCard.topic}
+            appliedCount={startIndex + index || 0}
+            location={skillstormCard.location}
+            date={new Date(skillstormCard.date).toLocaleDateString("en-US", {
+              day: "2-digit",
+              month: "short",
+            })}
+            level_required={
+              skillstormCard.level_required.charAt(0).toUpperCase() +
+              skillstormCard.level_required.slice(1)
+            }
+            duration={skillstormCard.duration}
+            pay={skillstormCard.pay}
+          />
         );
       }
     });
@@ -181,7 +191,7 @@ export default function HomePage() {
             url('/images/bg.jpg')
           `,
           backgroundSize: "cover",
-          backgroundPosition: "center",
+          backgroundPosition: "top",
           backgroundRepeat: "no-repeat",
         }}
       >
@@ -210,7 +220,7 @@ export default function HomePage() {
                   value={selectedCategory}
                   onValueChange={(value) => setSelectedCategory(value)}
                 >
-                  <SelectTrigger className="w-full px-5 py-3 bg-transparent border-none rounded-none text-allcharcoal text-md shadow-none hover:bg-purple-150 focus:ring-0 focus:border-none">
+                  <SelectTrigger className="w-full px-5 py-3 bg-transparent border-none rounded-none text-allcharcoal text-md shadow-none hover:bg-purple-150 focus:ring-0 focus:border-none cursor-pointer">
                     <SelectValue placeholder="Select Category" />
                   </SelectTrigger>
                   <SelectContent>
@@ -226,7 +236,7 @@ export default function HomePage() {
 
               <div className="flex-1 min-w-0">
                 <Select disabled>
-                  <SelectTrigger className="w-full px-5 py-3 bg-transparent border-none rounded-none text-allcharcoal text-md shadow-none hover:bg-purple-150 focus:ring-0 focus:border-none">
+                  <SelectTrigger className="w-full px-5 py-3 bg-transparent border-none rounded-none text-allcharcoal text-md shadow-none hover:bg-purple-150 focus:ring-0 focus:border-none cursor-pointer">
                     <SelectValue placeholder="Select Course" />
                   </SelectTrigger>
                   <SelectContent>
@@ -244,7 +254,7 @@ export default function HomePage() {
             </div>
 
             <div className="flex-shrink-0">
-              <Button className="py-6 px-8 bg-indigo-600 hover:bg-indigo-700 text-white rounded-sm transition-colors duration-200 shadow-none border-0">
+              <Button className="py-6 px-8 bg-allpurple hover:bg-indigo-700 text-white rounded-sm transition-colors duration-200 shadow-none border-0 cursor-pointer">
                 Search
               </Button>
             </div>
@@ -259,7 +269,7 @@ export default function HomePage() {
                   value={selectedCategory}
                   onValueChange={(value) => setSelectedCategory(value)}
                 >
-                  <SelectTrigger className="w-full px-5 py-4 bg-transparent border-none rounded-none text-gray-800 font-medium shadow-none hover:bg-purple-150 focus:ring-0 focus:border-none">
+                  <SelectTrigger className="w-full px-5 py-4 bg-transparent border-none rounded-none text-gray-800 font-medium shadow-none hover:bg-purple-150 focus:ring-0 focus:border-none cursor-pointer">
                     <SelectValue placeholder="Category" />
                   </SelectTrigger>
                   <SelectContent>
@@ -277,7 +287,7 @@ export default function HomePage() {
               {/* Course Select */}
               <div className="flex-1 min-w-0">
                 <Select disabled>
-                  <SelectTrigger className="w-full px-5 py-4 bg-transparent border-none rounded-none text-gray-800 font-medium shadow-none hover:bg-purple-150 focus:ring-0 focus:border-none">
+                  <SelectTrigger className="w-full px-5 py-4 bg-transparent border-none rounded-none text-gray-800 font-medium shadow-none hover:bg-purple-150 focus:ring-0 focus:border-none cursor-pointer">
                     <SelectValue placeholder="Course" />
                   </SelectTrigger>
                   <SelectContent>
@@ -295,7 +305,7 @@ export default function HomePage() {
             </div>
 
             <div className="w-full mt-2">
-              <Button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-sm transition-colors duration-200 shadow-none border-0">
+              <Button className="w-full bg-allpurple hover:bg-indigo-700 text-white rounded-sm transition-colors duration-200 shadow-none border-0 cursor-pointer">
                 Search
               </Button>
             </div>
@@ -304,7 +314,7 @@ export default function HomePage() {
 
         {/* Card Section */}
         <div className="lg:min-w-[70vw] md:min-w-[80vw] max-w-[90vw] flex flex-col justify-center items-center pt-10">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 w-full gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 w-full gap-4 auto-rows-fr">
             {loading ? (
               <div className="text-center text-allcharcoal">Loading...</div>
             ) : error ? (

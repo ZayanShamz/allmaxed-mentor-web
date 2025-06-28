@@ -10,6 +10,7 @@ function Loading() {
         alt="Login Logo"
         width={200}
         height={200}
+        priority
       />
       <div className="text-center mt-5">
         <div role="status">

@@ -33,7 +33,7 @@ export default function Footer() {
             alt="Footer Logo"
             width={150}
             height={20}
-            className="object-contain flex-shrink-0"
+            className="object-contain w-auto flex-shrink-0"
             priority
           />
         </div>

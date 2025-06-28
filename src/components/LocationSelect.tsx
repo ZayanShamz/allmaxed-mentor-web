@@ -45,7 +45,7 @@ export default function LocationSelect() {
         <PopoverTrigger asChild>
           <SelectTrigger
             aria-expanded={open}
-            className="w-full px-5 py-3 bg-transparent border-none rounded-none text-allcharcoal text-md shadow-none hover:bg-purple-150 focus:ring-0 focus:border-none"
+            className="w-full px-5 py-3 bg-transparent border-none rounded-none text-allcharcoal text-md shadow-none hover:bg-purple-150 focus:ring-0 focus:border-none cursor-pointer"
           >
             <SelectValue
               placeholder={
