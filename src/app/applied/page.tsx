@@ -241,13 +241,13 @@ export default function Appliedpage() {
       <div className="min-h-dvh w-full flex flex-col justify-start items-center py-10">
         <div className="w-full flex justify-center">
           <div className="w-[70%] sm:w-[40%] lg:w-[30%] bg-white border rounded-md p-3">
-            <div className="flex bg-[#EBE8FF] rounded-sm overflow-hidden items-center p-0.5 relative">
-              {/* Button 1 */}
+            <div className="grid grid-cols-2 bg-[#EBE8FF] rounded-sm overflow-hidden items-center p-1 relative">
+              {/* Slider */}
               <div
-                className={`absolute top-0.5 bottom-0.5 w-1/2 bg-white rounded-sm shadow-sm transition-transform duration-300 ease-in-out ${
+                className={`absolute top-0.5 bottom-0.5 left-0.5 w-1/2 bg-white rounded-sm shadow-sm transition-transform duration-300 ease-in-out ${
                   activeTab === "allmaxed"
                     ? "translate-x-0"
-                    : "translate-x-full"
+                    : "translate-x-[calc(100%-0.25rem)]"
                 }`}
               />
               <button
