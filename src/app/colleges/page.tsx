@@ -4,7 +4,7 @@ import { SlashIcon } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
-export default function partneredColleges() {
+export default function PartneredColleges() {
   return (
     <>
       <div

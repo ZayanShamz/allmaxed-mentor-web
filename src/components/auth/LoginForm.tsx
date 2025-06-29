@@ -24,6 +24,7 @@ export default function LoginForm() {
   const {
     setSignupData,
     setMentorData,
+    setUserData,
     setUserToken,
     reset,
     setApiPayload,
@@ -92,6 +93,7 @@ export default function LoginForm() {
       setUserToken(token);
 
       if (userType === "mentor") {
+        // redirect pending user to personal-info
         if (userStatus === "pending") {
           setSignupData({ username, email, phone });
           setApiPayload({ phone: phone });
@@ -99,15 +101,20 @@ export default function LoginForm() {
             style: { background: "#333", color: "#fff" },
           });
           router.push("/signup/personal-info");
+          // redirect in-review user to /waiting
         } else if (userStatus === "in-review") {
           toast.success("Approval in Review");
           router.push("/waiting");
+          // set mentorData and userData, redirect to /home
         } else if (userStatus === "approved") {
-          const mentorData = user.mentor;
+          const { mentor, ...restUserData } = user;
+          console.log("mentor :", mentor, "user : ", restUserData);
           setSignupData({ username, email, phone });
-          setMentorData(mentorData);
+          setMentorData(mentor);
+          setUserData(restUserData);
           router.replace("/home");
           toast.success("Login successful");
+          // rejected :(
         } else if (userStatus === "rejected") {
           toast.error(
             "Your account has been rejected. Please contact support."

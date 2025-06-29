@@ -64,15 +64,29 @@ interface MentorData {
   deleted_at: number | null;
 }
 
+interface UserData {
+  id: number;
+  name: string;
+  status: string;
+  type: string;
+  email: string;
+  phone: string;
+  email_verified_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 interface AuthState {
   signupData: SignupData | null;
   apiPayload: Partial<ApiPayload> | null;
   mentorData: MentorData | null;
+  userData: UserData | null;
   userToken: string | null;
   hydrated: boolean;
   setSignupData: (data: SignupData) => void;
   setApiPayload: (data: Partial<ApiPayload>) => void;
   setMentorData: (data: MentorData) => void;
+  setUserData: (data: UserData) => void;
   setUserToken: (token: string | null) => void;
   reset: () => void;
   setHydrated: () => void;
@@ -84,6 +98,7 @@ export const useAuthStore = create<AuthState>()(
       signupData: null,
       apiPayload: null,
       mentorData: null,
+      userData: null,
       userToken: null,
       hydrated: false,
       setSignupData: (data: SignupData) => set({ signupData: data }),
@@ -95,6 +110,7 @@ export const useAuthStore = create<AuthState>()(
           },
         })),
       setMentorData: (data: MentorData) => set({ mentorData: data }),
+      setUserData: (data: UserData) => set({ userData: data }),
       setUserToken: (token: string | null) => {
         set({ userToken: token });
 
