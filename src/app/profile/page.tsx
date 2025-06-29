@@ -4,7 +4,8 @@ import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import { useAuthStore } from "@/context/authStore";
 import Link from "next/link";
-import { SlashIcon } from "lucide-react";
+import { SlashIcon, MoveRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function ProfilePage() {
   const mentorData = useAuthStore((state) => state.mentorData);
@@ -195,6 +196,18 @@ export default function ProfilePage() {
                 </dl>
               </div>
             </div>
+          </div>
+        </div>
+        <div className="flex justify-center w-[90vw] mb-10">
+          <div className="w-full sm:w-[80%] md:w-[70%] lg:w-full flex justify-center md:justify-end">
+            <Button className="py-5 border-2 border-allcharcoal text-allcharcoal bg-transparent hover:bg-allcharcoal hover:text-allsnowflake cursor-pointer">
+              <a
+                href="/profile/edit"
+                className="flex justify-center items-center gap-2 px-3"
+              >
+                Edit Profile <MoveRight />
+              </a>
+            </Button>
           </div>
         </div>
       </div>
