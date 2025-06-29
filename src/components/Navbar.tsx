@@ -36,9 +36,9 @@ export default function Navbar() {
   const router = useRouter();
 
   const handleLogout = () => {
-    reset();
     toast.success("Logged out successfully");
-    router.push("/login");
+    router.replace("/login");
+    reset();
   };
 
   const handleMobileAvatarClick = () => {

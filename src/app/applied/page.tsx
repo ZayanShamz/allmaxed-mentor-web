@@ -24,7 +24,7 @@ interface AllmaxedData {
   appliedCount: number;
   location: string;
   date: string;
-  description: string;
+  module: string;
   level_required: string;
 }
 
@@ -142,7 +142,7 @@ export default function Appliedpage() {
             day: "2-digit",
             month: "short",
           })}
-          description={allmaxedCard.description}
+          module={allmaxedCard.module}
           level_required={
             allmaxedCard.level_required.charAt(0).toUpperCase() +
             allmaxedCard.level_required.slice(1)
@@ -219,7 +219,7 @@ export default function Appliedpage() {
               />
               <button
                 onClick={() => setActiveTab("allmaxed")}
-                className={`flex-1 text-center px-5 py-2 rounded-sm relative z-10 transition-all duration-300 ${
+                className={`flex-1 text-center px-5 py-2 rounded-sm relative z-10 transition-all duration-300 cursor-pointer ${
                   activeTab === "allmaxed"
                     ? "text-[#6B46C1] font-medium"
                     : "text-gray-600 hover:text-gray-800"
@@ -230,7 +230,7 @@ export default function Appliedpage() {
 
               <button
                 onClick={() => setActiveTab("skillstorm")}
-                className={`flex-1 text-center px-5 py-2 rounded-sm relative z-10 transition-all duration-300 ${
+                className={`flex-1 text-center px-5 py-2 rounded-sm relative z-10 transition-all duration-300 cursor-pointer ${
                   activeTab === "skillstorm"
                     ? "text-[#6B46C1] font-medium"
                     : "text-gray-600 hover:text-gray-800"

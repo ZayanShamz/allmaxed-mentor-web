@@ -29,9 +29,9 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const [show, setShow] = useState(isOpen);
 
   const handleLogout = () => {
-    reset();
     toast.success("Logged out successfully");
-    router.push("/login");
+    router.replace("/login");
+    reset();
   };
 
   useEffect(() => {

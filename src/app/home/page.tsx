@@ -32,7 +32,7 @@ interface AllmaxedCardData {
   appliedCount: number;
   location: string;
   date: string;
-  description: string;
+  module: string;
   level_required: string;
 }
 
@@ -66,6 +66,11 @@ export default function HomePage() {
 
   useEffect(() => {
     const fetchData = async () => {
+      if (!userToken) {
+        console.warn("No user token available, skipping API call");
+        return;
+      }
+
       setLoading(true);
       setError(null);
       try {
@@ -130,7 +135,7 @@ export default function HomePage() {
               day: "2-digit",
               month: "short",
             })}
-            description={allmaxedCard.description}
+            module={allmaxedCard.module}
             level_required={
               allmaxedCard.level_required.charAt(0).toUpperCase() +
               allmaxedCard.level_required.slice(1)
@@ -193,9 +198,9 @@ export default function HomePage() {
       </div>
 
       <section className="w-full min-h-screen bg-allsnowflake flex flex-col items-center justify-start py-20">
-        <div className="w-[90vw] md:w-[80vw] lg:w-[70vw] bg-white border rounded-md p-5">
+        <div className="w-[90vw] sm:w-[70vw] md:w-[80vw] lg:w-[70vw] bg-white border rounded-md p-5">
           {/* Desktop Layout - Joined Selects (sm and larger) */}
-          <div className="hidden sm:flex gap-4 items-center">
+          <div className="hidden md:flex gap-4 items-center">
             {/* Joined Select Container */}
             <div className="flex flex-1 bg-[#EBE8FF] rounded-sm overflow-hidden min-w-0 py-2 items-center">
               <div className="flex-1 min-w-0 border-r-2 border-gray-300">
@@ -244,10 +249,10 @@ export default function HomePage() {
           </div>
 
           {/* Mobile Layout - Stacked Selects (smaller than sm) */}
-          <div className="flex sm:hidden flex-col gap-3">
-            <div className="flex flex-1 bg-[#EBE8FF] rounded-sm overflow-hidden min-w-0 py-2">
+          <div className="flex md:hidden flex-col gap-3">
+            <div className="flex flex-col bg-[#EBE8FF] rounded-sm overflow-hidden py-2 px-3">
               {/* Category Select */}
-              <div className="flex-1 min-w-0 border-r-2 border-gray-300">
+              <div className="flex-1 border-b-2 border-gray-300 py-1">
                 <Select
                   value={selectedCategory}
                   onValueChange={(value) => setSelectedCategory(value)}
@@ -263,12 +268,12 @@ export default function HomePage() {
               </div>
 
               {/* Location Select */}
-              <div className="flex-1 min-w-0 border-r-2 border-gray-300">
+              <div className="flex-1 min-w-0 border-b-2 border-gray-300 py-1">
                 <LocationSelect />
               </div>
 
               {/* Course Select */}
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 py-1">
                 <Select disabled>
                   <SelectTrigger className="w-full px-5 py-4 bg-transparent border-none rounded-none text-gray-800 font-medium shadow-none hover:bg-purple-150 focus:ring-0 focus:border-none cursor-pointer">
                     <SelectValue placeholder="Course" />
@@ -296,8 +301,8 @@ export default function HomePage() {
         </div>
 
         {/* Card Section */}
-        <div className="lg:min-w-[70vw] md:min-w-[80vw] max-w-[90vw] flex flex-col justify-center items-center pt-10">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 w-full gap-4 auto-rows-fr">
+        <div className="w-[80vw] sm:w-[70vw] md:w-[80vw] lg:w-[80vw] flex flex-col justify-center items-center pt-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 items-center w-full gap-4">
             {loading ? (
               <div className="text-center text-allcharcoal">Loading...</div>
             ) : error ? (

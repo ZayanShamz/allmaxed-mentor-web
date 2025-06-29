@@ -83,7 +83,7 @@ const SkillstormCard: React.FC<SkillstormProps> = ({
   };
 
   return (
-    <div className="flex flex-col justify-center bg-white rounded-xl border border-gray-200 hover:shadow-lg transition-shadow duration-300 max-w-sm cursor-pointer lg:min-w-[300px] min-w-[70vw] sm:min-w-[60vw] md:min-w-0 h-full">
+    <div className="flex flex-col justify-center bg-white rounded-xl border border-gray-200 hover:shadow-lg transition-shadow duration-300 cursor-pointer w-full h-full">
       <Link
         href={`home/workshops/${workshopId}`}
         key={workshopId}
@@ -102,7 +102,9 @@ const SkillstormCard: React.FC<SkillstormProps> = ({
             {/* Location */}
             <div className="flex items-start text-gray-500 mb-4 flex-1">
               <MapPin className="w-4 h-4 mr-2 flex-shrink-0 mt-0.5" />
-              <span className="text-sm leading-snug">{location}</span>
+              <span className="text-sm leading-snug line-clamp-2">
+                {location}
+              </span>
             </div>
           </div>
 
@@ -114,7 +116,7 @@ const SkillstormCard: React.FC<SkillstormProps> = ({
             </div>
 
             {/* Tags */}
-            <div className="flex gap-2 justify-start w-full mb-3">
+            <div className="flex gap-2 justify-start items-center w-full mb-3">
               <span className="px-3 py-1 bg-[#EBE8FF] text-allcharcoal text-sm font-medium rounded-full">
                 {level_required}
               </span>

@@ -19,21 +19,22 @@ export default function AuthWrapper({
   const router = useRouter();
   const pathname = usePathname();
   const [isChecking, setIsChecking] = useState(true);
+  const [isAuthorized, setIsAuthorized] = useState(false);
 
   useEffect(() => {
-    const checkAuth = async () => {
-      // public routes (accessible without userToken)
+    const checkDetailedAuth = async () => {
+      // Define route categories
       const publicRoutes = ["/login", "/signup"];
-
-      // semi-public routes (require userToken, accessible to non-rejected/non-approved)
       const semiPublicRoutes = [
         "/signup/personal-info",
         "/signup/professional-info",
         "/waiting",
+        "/loading",
       ];
+      const protectedRoutes = ["/home", "/applied", "/colleges", "/profile"];
 
-      // Allow access to public routes regardless of token
       if (publicRoutes.includes(pathname)) {
+        setIsAuthorized(true);
         setIsChecking(false);
         return;
       }
@@ -43,14 +44,13 @@ export default function AuthWrapper({
         return;
       }
 
-      // Redirect to /login if no token for non-public routes
-      if (!userToken) {
-        router.push("/login");
-        setIsChecking(false);
-        return;
-      }
+      // if (!userToken) {
+      //   console.warn("AuthWrapper: No token");
+      //   router.replace("/login");
+      //   setIsChecking(false);
+      //   return;
+      // }
 
-      // Validate token and fetch user data for non-public routes
       try {
         const response = await axios.get(
           `${process.env.NEXT_PUBLIC_API_URL}/api/user`,
@@ -64,7 +64,7 @@ export default function AuthWrapper({
         if (user.type !== "mentor") {
           toast.error("Unauthorized: Only mentors have access.");
           reset();
-          router.push("/login");
+          router.replace("/login");
           setIsChecking(false);
           return;
         }
@@ -74,55 +74,138 @@ export default function AuthWrapper({
           setMentorData(user.mentor);
         }
 
-        // Redirect based on user.status
         const status = user.status;
 
+        // Handle different user statuses
+
         if (status === "approved") {
-          // Approved users can access any page except semiPublicRoutes
-          if (semiPublicRoutes.includes(pathname)) {
-            if (pathname === "/waiting") {
-              toast.success("Welcome To Almax'd");
-              router.push("/home");
-            } else {
-              router.push("/home");
-            }
+          // If Approved users land on loading page, redirect to /home
+          if (pathname === "/loading") {
+            router.replace("/home");
+            setIsChecking(false);
+            return;
           }
+
+          // If approved user is on waiting page, show welcome message and redirect
+          if (pathname === "/waiting") {
+            toast.success("Welcome To Almax'd");
+            router.replace("/home");
+            setIsChecking(false);
+            return;
+          }
+
+          // If approved user is on other semi-public routes, redirect to home
+          if (semiPublicRoutes.includes(pathname)) {
+            router.replace("/home");
+            setIsChecking(false);
+            return;
+          }
+
+          // Allow access to all other protected routes
+          setIsAuthorized(true);
+
+          // reject ::
         } else if (status === "rejected") {
           toast.error(
             "Your account has been rejected. Please contact support."
           );
           reset();
-          router.push("/login");
+          router.replace("/login");
+          setIsChecking(false);
+          return;
+
+          // pending/in-review users
         } else {
-          // Unapproved users (pending status) can only access semiPublicRoutes
-          if (!semiPublicRoutes.includes(pathname)) {
-            toast.error(
-              "Unauthorized access. Please complete your profile by logging in."
+          // If user is on loading page, redirect based on status
+          if (pathname === "/loading") {
+            if (status === "pending") {
+              toast("Fill out the remaining details to complete registration", {
+                style: { background: "#333", color: "#fff" },
+              });
+              router.replace("/signup/personal-info");
+            } else if (status === "in-review") {
+              router.replace("/waiting");
+            }
+            setIsChecking(false);
+            return;
+          }
+
+          // Allow access to public routes regardless of status
+          if (publicRoutes.includes(pathname)) {
+            setIsAuthorized(true);
+          }
+
+          // Unapproved users (pending/in-review status)
+          if (semiPublicRoutes.includes(pathname)) {
+            // Additional logic for pending users (shouldnt normally happen)
+            if (status === "pending") {
+              if (pathname === "/waiting") {
+                router.replace("/signup/personal-info");
+                setIsChecking(false);
+                return;
+              }
+            } else if (status === "in-review") {
+              // In-review users redirected to /waiting
+              if (
+                pathname === "/signup/personal-info" ||
+                pathname === "/signup/professional-info"
+              ) {
+                router.replace("/waiting");
+                setIsChecking(false);
+                return;
+              }
+            }
+
+            setIsAuthorized(true);
+          } else {
+            // Non-approved users trying to access protected routes
+            const isProtectedRoute = protectedRoutes.some((route) =>
+              pathname.startsWith(route)
             );
-            router.push("/login");
+
+            if (isProtectedRoute) {
+              toast.error("You're not Authorised");
+              if (status === "pending") {
+                router.replace("/signup/personal-info");
+              } else {
+                router.replace("/waiting");
+              }
+            } else {
+              // For other routes, redirect based on status
+              toast.error("Unauthorized access. Please complete your profile.");
+              router.replace("/login");
+            }
+            setIsChecking(false);
+            return;
           }
         }
       } catch (error: unknown) {
-        console.error("Token validation failed:", error);
+        console.error("Detailed auth validation failed:", error);
+
         if (error instanceof AxiosError && error.response?.status === 429) {
           toast.error("Too many requests. Please try again later.");
           setTimeout(() => {
-            checkAuth();
+            checkDetailedAuth();
           }, 10000); // Retry after 10 seconds
         } else {
           toast.error("Session expired. Please log in again.");
           reset();
-          router.push("/login");
+          router.replace("/login");
         }
       }
 
       setIsChecking(false);
     };
 
-    checkAuth();
+    checkDetailedAuth();
   }, [userToken, hydrated, setMentorData, reset, router, pathname]);
 
   if (isChecking) {
+    return <Loading />;
+  }
+
+  // Show loading if not authorized (shouldn't happen due to middleware)
+  if (!isAuthorized) {
     return <Loading />;
   }
 

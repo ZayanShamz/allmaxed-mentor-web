@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -21,8 +21,15 @@ export default function LoginForm() {
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
-  const { setSignupData, setMentorData, setUserToken, reset, setApiPayload } =
-    useAuthStore();
+  const {
+    setSignupData,
+    setMentorData,
+    setUserToken,
+    reset,
+    setApiPayload,
+    userToken,
+    mentorData,
+  } = useAuthStore();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -33,6 +40,12 @@ export default function LoginForm() {
     email: "",
     password: "",
   });
+
+  useEffect(() => {
+    if (userToken && mentorData?.status === "approved") {
+      router.replace("/home");
+    }
+  }, [userToken, mentorData, router]);
 
   const [submitted, setSubmitted] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
@@ -93,7 +106,7 @@ export default function LoginForm() {
           const mentorData = user.mentor;
           setSignupData({ username, email, phone });
           setMentorData(mentorData);
-          router.push("/home");
+          router.replace("/home");
           toast.success("Login successful");
         } else if (userStatus === "rejected") {
           toast.error(
@@ -261,9 +274,10 @@ export default function LoginForm() {
                 <div className="flex justify-center items-center py-5">
                   <Button
                     type="submit"
-                    className="w-[45%] py-5 bg-allpurple text-allsnowflake text-lg border border-allcharcoal cursor-pointer transition duration-300 ease-in-out hover:bg-[#0022ff] hover:text-white"
+                    className="min-w-[45%] py-5 px-3 bg-allpurple text-allsnowflake text-lg border border-allcharcoal cursor-pointer transition duration-300 ease-in-out hover:bg-[#0022ff] hover:text-white"
+                    disabled={loginMutation.isPending}
                   >
-                    Sign In
+                    {loginMutation.isPending ? "Authenticating..." : "Sign In"}
                   </Button>
                 </div>
               </form>
