@@ -100,7 +100,7 @@ export default function EditProfile() {
                   </dt>
                   <dd className="mt-0 text-body text-gray-900 col-span-2 w-full">
                     <Select>
-                      <SelectTrigger className="w-full">
+                      <SelectTrigger className="w-full border-dashed border-2 focus:border-gray-900 focus:shadow-lg focus-visible:ring-[0px]">
                         <SelectValue placeholder={mentorData?.gender} />
                       </SelectTrigger>
                       <SelectContent>
@@ -231,7 +231,7 @@ export default function EditProfile() {
                     </dt>
                     <dd className="text-gray-900 col-span-2">
                       <Select>
-                        <SelectTrigger className="w-full">
+                        <SelectTrigger className="w-full border-dashed border-2 focus:border-gray-900 focus:shadow-lg focus-visible:ring-[0px]">
                           <SelectValue
                             placeholder={mentorData?.current_occupation}
                           />
