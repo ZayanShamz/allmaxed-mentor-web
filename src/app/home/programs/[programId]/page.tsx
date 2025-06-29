@@ -235,9 +235,15 @@ export default function ProgramDetailsPage() {
               </span>
             </div>
             <div className="mb-4 leading-tight">
-              <h5 className="text-h5 font-semibold">Topic</h5>
+              <h5 className="text-h5 font-semibold">Title</h5>
               <span className="text-body-small leading-tight text-allpurple p-0">
                 {program?.title}
+              </span>
+            </div>
+            <div className="mb-4 leading-tight">
+              <h5 className="text-h5 font-semibold">Module</h5>
+              <span className="text-body-small leading-tight text-allpurple p-0">
+                {program?.module}
               </span>
             </div>
             <div className="mb-4 leading-tight">

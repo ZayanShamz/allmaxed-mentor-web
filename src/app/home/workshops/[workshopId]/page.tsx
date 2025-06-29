@@ -50,6 +50,8 @@ export default function WorkshopDetailsPage() {
   const [isLoading, setIsLoading] = useState(false);
   const userId = useAuthStore((state) => state.mentorData?.user_id);
 
+  console.log(workshopId);
+
   const [workshop, setWorkshop] = useState<workshopDetails | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -212,40 +214,9 @@ export default function WorkshopDetailsPage() {
       </div>
 
       <section className="w-full bg-allsnowflake flex flex-col items-center justify-start py-10 md:py-20">
-        <div className="flex flex-col flex-wrap md:flex-row justify-between items-stretch w-[90vw] md:max-w-screen-xl md:gap-10 mb-5">
-          <div className="w-full md:flex-1 flex flex-col justify-start items-center">
-            <div className="w-full flex flex-col items-start justify-start mb-10">
-              <span className="text-h2 text-allpurple mb-5">
-                {workshop?.topic}
-              </span>
-              <span className="text-h3 mb-3">Content Overview</span>
-              <p className="text-body text-gray-600">
-                {workshop?.content_overview}
-              </p>
-            </div>
-
-            <div className="hidden md:flex justify-center items-center w-full md:justify-start mt-5">
-              {hasApplied ? (
-                <Button
-                  className="px-10 py-5 rounded-sm border-2 border-red-500 text-red-500 text-lg bg-transparent cursor-pointer hover:bg-red-500 hover:text-allsnowflake"
-                  onClick={handleWithdrawal}
-                  disabled={isLoading || !!error}
-                >
-                  Withdraw Application
-                </Button>
-              ) : (
-                <Button
-                  className="px-10 py-5 rounded-sm border-2 border-allpurple text-allpurple text-lg bg-transparent cursor-pointer hover:bg-allpurple hover:text-allsnowflake"
-                  onClick={handleApply}
-                  disabled={isLoading || !!error}
-                >
-                  Apply Now
-                </Button>
-              )}
-            </div>
-          </div>
-
-          <div className="w-full md:w-auto md:min-w-[300px] md:max-w-[35%] bg-white rounded-lg flex flex-col items-start justify-center mb-5 p-5">
+        <div className="flex flex-col md:flex-row justify-between items-stretch w-[90vw] md:max-w-screen-xl md:gap-10">
+          {/* section card - first on mobile, right on desktop */}
+          <div className="w-full md:w-auto md:min-w-[300px] md:max-w-[35%] md:order-2 bg-white rounded-lg flex flex-col items-start justify-center max-md:mb-5 p-5">
             <div className="mb-5">
               <h3 className="text-h3 text-allcharcoal">Content Overview</h3>
             </div>
@@ -287,13 +258,6 @@ export default function WorkshopDetailsPage() {
               </span>
             </div>
             <div className="mb-4 leading-tight">
-              <h5 className="text-h5 font-semibold">College Name</h5>
-              <span className="text-body-small leading-tight text-allpurple ">
-                SAFI Institute of Advanced Study (Autonomous), Vazhayoor,
-                Ramannattukara
-              </span>
-            </div>
-            <div className="mb-4 leading-tight">
               <h5 className="text-h5 font-semibold">Location</h5>
               <span className="text-body-small leading-tight text-allpurple p-0 cursor-pointer underline">
                 <a
@@ -308,27 +272,38 @@ export default function WorkshopDetailsPage() {
               </span>
             </div>
           </div>
-        </div>
 
-        <div className="md:hidden w-[90vw] md:max-w-screen-xl flex flex-col justify-center items-center md:items-start">
-          <div className="flex justify-center items-center w-full md:justify-start">
-            {hasApplied ? (
-              <Button
-                className="px-10 py-5 rounded-sm border-2 border-red-500 text-red-500 text-lg bg-transparent cursor-pointer hover:bg-red-500 hover:text-allsnowflake"
-                onClick={handleWithdrawal}
-                disabled={isLoading || !!error}
-              >
-                Withdraw Application
-              </Button>
-            ) : (
-              <Button
-                className="px-10 py-5 rounded-sm border-2 border-allpurple text-allpurple text-lg bg-transparent cursor-pointer hover:bg-allpurple hover:text-allsnowflake"
-                onClick={handleApply}
-                disabled={isLoading || !!error}
-              >
-                Apply Now
-              </Button>
-            )}
+          {/* left on >md (md:order-1), second on mobile */}
+          <div className="w-full md:flex-1 md:order-1 max-md:mt-10 flex flex-col justify-start items-center">
+            <div className="w-full flex flex-col items-start justify-start mb-10">
+              <span className="text-h2 text-allpurple mb-5">
+                {workshop?.topic}
+              </span>
+              <span className="text-h3 mb-3">Description</span>
+              <p className="text-body text-gray-600">
+                {workshop?.content_overview}
+              </p>
+            </div>
+
+            <div className="flex justify-center items-center w-full md:justify-start mt-5">
+              {hasApplied ? (
+                <Button
+                  className="px-10 py-5 rounded-sm border-2 border-red-500 text-red-500 text-lg bg-transparent cursor-pointer hover:bg-red-500 hover:text-allsnowflake"
+                  onClick={handleWithdrawal}
+                  disabled={isLoading || !!error}
+                >
+                  Withdraw Application
+                </Button>
+              ) : (
+                <Button
+                  className="px-10 py-5 rounded-sm border-2 border-allpurple text-allpurple text-lg bg-transparent cursor-pointer hover:bg-allpurple hover:text-allsnowflake"
+                  onClick={handleApply}
+                  disabled={isLoading || !!error}
+                >
+                  Apply Now
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </section>

@@ -82,6 +82,8 @@ const SkillstormCard: React.FC<SkillstormProps> = ({
     }
   };
 
+  console.log("workshop id : ", workshopId);
+
   return (
     <div className="flex flex-col justify-center bg-white rounded-xl border border-gray-200 hover:shadow-lg transition-shadow duration-300 cursor-pointer w-full h-full">
       <Link
@@ -120,7 +122,7 @@ const SkillstormCard: React.FC<SkillstormProps> = ({
               <span className="px-3 py-1 bg-[#EBE8FF] text-allcharcoal text-sm font-medium rounded-full">
                 {level_required}
               </span>
-              <span className="px-3 py-1 bg-[#EBE8FF] text-allcharcoal text-sm font-medium rounded-full">
+              <span className="px-3 py-1 bg-[#EBE8FF] text-allcharcoal text-sm font-medium rounded-full line-clamp-1">
                 {duration}
               </span>
               <span className="px-3 py-1 bg-allpurple text-allsnowflake text-sm font-medium rounded-full">

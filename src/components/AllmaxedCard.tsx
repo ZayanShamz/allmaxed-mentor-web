@@ -46,7 +46,6 @@ const AllmaxedCard: React.FC<AllmaxedProps> = ({
   const { userToken } = useAuthStore();
 
   const [isLoading, setIsLoading] = useState(false);
-  console.log(programId);
 
   const handleWithdrawal = async () => {
     if (!programId || isNaN(parseInt(programId, 10))) {

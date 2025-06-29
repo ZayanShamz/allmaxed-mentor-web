@@ -30,8 +30,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const [show, setShow] = useState(isOpen);
   const pathname = usePathname();
 
-  console.log(pathname);
-
   const handleLogout = () => {
     toast.success("Logged out successfully");
     router.replace("/login");

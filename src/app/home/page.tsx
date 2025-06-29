@@ -146,6 +146,7 @@ export default function HomePage() {
         const skillstormCard = card as SkillstormCardData;
         return (
           <SkillstormCard
+            workshopId={skillstormCard.id}
             key={startIndex + index}
             topic={skillstormCard.topic}
             appliedCount={startIndex + index || 0}
