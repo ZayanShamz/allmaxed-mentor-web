@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/context/authStore";
 import toast from "react-hot-toast";
 import { X } from "lucide-react";
+import { usePathname } from "next/navigation";
 
 import {
   AlertDialog,
@@ -27,6 +28,9 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const router = useRouter();
   const { reset } = useAuthStore();
   const [show, setShow] = useState(isOpen);
+  const pathname = usePathname();
+
+  console.log(pathname);
 
   const handleLogout = () => {
     toast.success("Logged out successfully");
@@ -39,7 +43,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       setShow(true);
       document.body.style.overflow = "hidden";
     } else {
-      const timer = setTimeout(() => setShow(false), 280); // Wait for close animation
+      const timer = setTimeout(() => setShow(false), 280);
       document.body.style.overflow = "";
       return () => clearTimeout(timer);
     }
@@ -70,42 +74,57 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       {/* Sidebar */}
 
       <div
-        className={`fixed top-0 right-0 h-dvh z-50 w-[80vw] bg-allsnowflake shadow-2xl transition-transform duration-300 ${
+        className={`fixed top-0 right-0 h-dvh z-50 w-[80vw] bg-allcharcoal shadow-2xl transition-transform duration-300 ${
           isOpen ? "animate-slide-in-right" : "animate-slide-out-right"
         }`}
       >
+        {/* Close Button */}
+        <div className="absolute top-0 w-full flex justify-end p-4 bg-allcharcoal">
+          <button onClick={onClose} className="p-2 rounded-full">
+            <X size={24} className="text-allsnowflake fill-allsnowflake" />
+          </button>
+        </div>
+
         {/* Sidebar Content */}
         <div className="p-4 h-full w-full flex justify-center items-center">
           <nav className="">
             <a
               href="/home"
-              className="block px-4 py-5 text-allcharcoal text-center border-b border-gray-200"
+              className={`block px-4 py-5 text-allsnowflake text-center border-b border-gray-600 ${
+                pathname === "/home" ? "border-white" : "border-gray-600"
+              }`}
               onClick={onClose}
+              aria-current="page"
             >
               Home
             </a>
             <a
               href="/profile"
-              className="block px-4 py-3 text-allcharcoal text-center border-b border-gray-200"
+              className={`block px-4 py-5 text-allsnowflake text-center border-b border-gray-600 ${
+                pathname === "/profile" ? "border-white" : "border-gray-600"
+              }`}
               onClick={onClose}
             >
               Profile
             </a>
             <a
               href="/applied"
-              className="block px-4 py-3 text-allcharcoal text-center border-b border-gray-200"
+              className={`block px-4 py-5 text-allsnowflake text-center border-b ${
+                pathname === "/applied" ? "border-white" : "border-gray-600"
+              }`}
               onClick={onClose}
             >
               Applied
             </a>
             <a
               href="/colleges"
-              className="block px-4 py-3 text-allcharcoal text-center border-b border-gray-200"
+              className={`block px-4 py-5 text-allsnowflake text-center border-b border-gray-600 ${
+                pathname === "/colleges" ? "border-white" : "border-gray-600"
+              }`}
               onClick={onClose}
             >
               Colleges
             </a>
-
             <AlertDialog>
               <AlertDialogTrigger asChild className="w-full">
                 <div className="block px-4 py-3 text-red-500 text-center">
@@ -139,16 +158,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               </AlertDialogContent>
             </AlertDialog>
           </nav>
-        </div>
-        {/* Close Button */}
-        <div className="absolute top-0 w-full flex justify-end p-4 ">
-          <button
-            onClick={onClose}
-            className="p-2 rounded-full hover:bg-gray-100 transition-colors duration-200"
-            aria-label="Close sidebar"
-          >
-            <X size={24} className="text-allcharcoal" />
-          </button>
         </div>
       </div>
     </>

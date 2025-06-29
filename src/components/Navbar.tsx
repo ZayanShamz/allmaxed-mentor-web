@@ -26,6 +26,7 @@ import {
 import { Command, CommandItem } from "@/components/ui/command";
 import { usePathname } from "next/navigation";
 import Sidebar from "./Sidebar";
+import { Menu } from "lucide-react";
 
 export default function Navbar() {
   const [avatarOpen, setAvatarOpen] = useState(false);
@@ -147,17 +148,13 @@ export default function Navbar() {
                 </PopoverContent>
               </Popover>
             </div>
+
+            {/* replace this avatar with the hamburger */}
             <div
               className="flex md:hidden cursor-pointer"
               onClick={handleMobileAvatarClick}
             >
-              <Avatar>
-                <AvatarImage
-                  src="https://github.com/shadcn.png"
-                  alt="@shadcn"
-                />
-                <AvatarFallback>CN</AvatarFallback>
-              </Avatar>
+              <Menu color="white" />
             </div>
           </div>
 
