@@ -130,7 +130,7 @@ export default function Appliedpage() {
     .slice(startIndex, endIndex)
     .map((card, index) => {
       const allmaxedCard = card as AllmaxedData;
-      // console.log("allmaxedCard :", allmaxedCard.id);
+
       return (
         <AllmaxedCard
           programId={allmaxedCard.id}
@@ -157,6 +157,7 @@ export default function Appliedpage() {
       const skillstormCard = card as SkillstormData;
       return (
         <SkillstormCard
+          workshopId={skillstormCard.id}
           key={startIndex + index}
           topic={skillstormCard.topic}
           appliedCount={startIndex + index || 0}

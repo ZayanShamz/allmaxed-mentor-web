@@ -50,8 +50,6 @@ export default function WorkshopDetailsPage() {
   const [isLoading, setIsLoading] = useState(false);
   const userId = useAuthStore((state) => state.mentorData?.user_id);
 
-  console.log(workshopId);
-
   const [workshop, setWorkshop] = useState<workshopDetails | null>(null);
   const [error, setError] = useState<string | null>(null);
 
