@@ -140,7 +140,7 @@ export default function ProfessionalInfoForm() {
   const dataUpload = async (payload: {
     age: number;
     gender: string;
-    aadhaar_no: string | null;
+    aadhaar_no: string;
     phone: string;
     address: string;
     city: string;
@@ -225,7 +225,7 @@ export default function ProfessionalInfoForm() {
       const fullPayload: {
         age: number;
         gender: string;
-        aadhaar_no: string | null;
+        aadhaar_no: string;
         phone: string;
         address: string;
         city: string;
@@ -242,7 +242,7 @@ export default function ProfessionalInfoForm() {
       } = {
         age: apiPayload.age ?? 0,
         gender: apiPayload.gender ?? "",
-        aadhaar_no: apiPayload.aadhaar_no ?? null,
+        aadhaar_no: apiPayload.aadhaar_no ?? "",
         phone: apiPayload.phone ?? "",
         address: apiPayload.address ?? "",
         city: apiPayload.city ?? "",

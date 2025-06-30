@@ -144,7 +144,7 @@ export default function PersonalInfoForm() {
       setApiPayload({
         age: parseInt(formData.age) || 0,
         gender: formData.gender,
-        aadhaar_no: formData.aadhaar || null,
+        aadhaar_no: formData.aadhaar,
         address: formData.address,
         city: formData.city,
         district: formData.district,
