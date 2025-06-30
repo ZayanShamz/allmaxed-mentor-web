@@ -6,11 +6,12 @@ import { useAuthStore } from "@/context/authStore";
 import Link from "next/link";
 import { SlashIcon, MoveRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 export default function ProfilePage() {
   const mentorData = useAuthStore((state) => state.mentorData);
   const userData = useAuthStore((state) => state.userData);
-  console.log(mentorData, userData);
+  const router = useRouter();
 
   return (
     <>
@@ -182,7 +183,21 @@ export default function ProfilePage() {
                       Portfolio
                     </dt>
                     <dd className="mt-0 text-body text-gray-900 col-span-2">
-                      {mentorData?.portfolio_link}
+                      <Link
+                        href={`${
+                          mentorData?.portfolio_link
+                            ? mentorData.portfolio_link
+                            : "/profile/edit"
+                        }`}
+                        target={`${
+                          mentorData?.portfolio_link ? "_blank" : "_self"
+                        }`}
+                        className="text-allpurple underline underline-offset-2 cursor-pointer"
+                      >
+                        {mentorData?.portfolio_link
+                          ? mentorData.portfolio_link
+                          : "Add your Portfolio Link"}
+                      </Link>
                     </dd>
                   </div>
                   <div className="py-5 grid grid-cols-3 gap-4 px-3">
@@ -190,7 +205,21 @@ export default function ProfilePage() {
                       Social Media
                     </dt>
                     <dd className="mt-0 text-body text-gray-900 col-span-2">
-                      {mentorData?.social_media_link}
+                      <Link
+                        href={`${
+                          mentorData?.social_media_link
+                            ? mentorData.social_media_link
+                            : "/profile/edit"
+                        }`}
+                        target={`${
+                          mentorData?.social_media_link ? "_blank" : "_self"
+                        }`}
+                        className="text-allpurple underline underline-offset-2 cursor-pointer"
+                      >
+                        {mentorData?.social_media_link
+                          ? mentorData?.social_media_link
+                          : "Add Social Media Link"}
+                      </Link>
                     </dd>
                   </div>
                 </dl>
@@ -200,13 +229,13 @@ export default function ProfilePage() {
         </div>
         <div className="flex justify-center w-[90vw] mb-10">
           <div className="w-full sm:w-[80%] md:w-[70%] lg:w-full flex justify-center md:justify-end">
-            <Button className="py-5 border-2 border-allcharcoal text-allcharcoal bg-transparent hover:bg-allcharcoal hover:text-allsnowflake cursor-pointer">
-              <a
-                href="/profile/edit"
-                className="flex justify-center items-center gap-2 px-3"
-              >
+            <Button
+              onClick={() => router.push("/profile/edit")}
+              className="py-5 border-2 border-allcharcoal text-allcharcoal bg-transparent hover:bg-allcharcoal hover:text-allsnowflake cursor-pointer"
+            >
+              <span className="flex justify-center items-center gap-3 px-3 text-lg">
                 Edit Profile <MoveRight />
-              </a>
+              </span>
             </Button>
           </div>
         </div>

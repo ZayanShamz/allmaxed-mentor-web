@@ -24,7 +24,7 @@ interface SignupData {
 interface ApiPayload {
   age: number;
   gender: string;
-  aadhaar_no: string | null;
+  aadhaar_no: string;
   phone: string;
   address: string;
   city: string;
@@ -45,7 +45,7 @@ interface MentorData {
   user_id: number;
   age: number;
   gender: string;
-  aadhaar_no: string | null;
+  aadhaar_no: string;
   address: string;
   city: string;
   district: string;

@@ -5,27 +5,264 @@ import Navbar from "@/components/Navbar";
 import { useAuthStore } from "@/context/authStore";
 import Link from "next/link";
 import { SlashIcon } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState, useRef } from "react";
+import axios from "axios";
+import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
+import * as Tooltip from "@radix-ui/react-tooltip";
+import { X, MoveLeft } from "lucide-react";
+
+interface UpdateMentorPayload {
+  portfolio_link?: string | null;
+  social_media_link?: string | null;
+  // Add other fields that your API expects
+  age?: number;
+  gender?: string;
+  aadhaar_no?: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  district?: string;
+  state?: string;
+  field?: string;
+  current_occupation?: string;
+  designation?: string;
+  experience?: string;
+  workplace?: string;
+  duration?: string;
+}
+
+interface Errors {
+  portfolio: string;
+  social: string;
+}
 
 export default function EditProfile() {
   const mentorData = useAuthStore((state) => state.mentorData);
   const userData = useAuthStore((state) => state.userData);
-  console.log(mentorData, userData);
+  const userToken = useAuthStore((state) => state.userToken);
+  const setMentorData = useAuthStore((state) => state.setMentorData);
+  const mentorId = mentorData?.id;
+  const router = useRouter();
+  const queryClient = useQueryClient();
+
+  const [portfolioLink, setPortfolioLink] = useState(
+    mentorData?.portfolio_link || ""
+  );
+  const [socialMediaLink, setSocialMediaLink] = useState(
+    mentorData?.social_media_link || ""
+  );
+  const [errors, setErrors] = useState<Errors>({ portfolio: "", social: "" });
+  const [submitted, setSubmitted] = useState(false);
+  const [focusedField, setFocusedField] = useState<string | null>(null);
+
+  const portfolioRef = useRef<HTMLInputElement>(null);
+  const socialRef = useRef<HTMLInputElement>(null);
+
+  // validate url input (api needs proper url)
+  const isValidUrl = (url: string): boolean => {
+    if (!url.trim()) return true; // Empty is valid (optional field)
+    try {
+      const urlObj = new URL(url);
+      return urlObj.protocol === "http:" || urlObj.protocol === "https:";
+    } catch {
+      return false;
+    }
+  };
+
+  const handlePortfolioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setPortfolioLink(value);
+    if (errors.portfolio) {
+      setErrors((prev) => ({ ...prev, portfolio: "" }));
+    }
+  };
+
+  const handleSocialChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSocialMediaLink(value);
+    if (errors.social) {
+      setErrors((prev) => ({ ...prev, social: "" }));
+    }
+  };
+
+  const handleClearPortfolio = () => {
+    setPortfolioLink("");
+    setErrors((prev) => ({ ...prev, portfolio: "" }));
+  };
+
+  const handleClearSocialMedia = () => {
+    setSocialMediaLink("");
+    setErrors((prev) => ({ ...prev, social: "" }));
+  };
+
+  const validateForm = () => {
+    let isValid = true;
+    const newErrors: Errors = {
+      portfolio: "",
+      social: "",
+    };
+    let firstErrorField: string | null = null;
+
+    if (portfolioLink && !isValidUrl(portfolioLink)) {
+      newErrors.portfolio =
+        "Please enter a valid URL starting with http:// or https://";
+      isValid = false;
+      if (!firstErrorField) firstErrorField = "portfolio";
+    }
+
+    if (socialMediaLink && !isValidUrl(socialMediaLink)) {
+      newErrors.social =
+        "Please enter a valid URL starting with http:// or https://";
+      isValid = false;
+      if (!firstErrorField) firstErrorField = "social";
+    }
+
+    setErrors(newErrors);
+    return { isValid, firstErrorField };
+  };
+
+  // Mutation for updating mentor data using 'patch'
+  const updateMentorMutation = useMutation({
+    mutationFn: async (payload: UpdateMentorPayload) => {
+      if (!mentorId || !userToken) {
+        throw new Error("Missing mentor ID or token");
+      }
+
+      const response = await axios.patch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/mentors/${mentorId}`,
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${userToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      return response.data;
+    },
+    onSuccess: (data) => {
+      toast.success("Profile updated successfully!");
+
+      // Update the mentor data in authStore
+      if (data.mentor) {
+        setMentorData(data.mentor);
+      }
+
+      // Invalidate and refetch any queries that depend on mentor data
+      queryClient.invalidateQueries({ queryKey: ["mentor", mentorId] });
+      router.push("/profile");
+    },
+    onError: (error) => {
+      console.error("Update failed:", error);
+      if (axios.isAxiosError(error)) {
+        const errorMessage =
+          error.response?.data?.message || "Failed to update profile";
+
+        if (error.response?.status === 500) {
+          const validationErrors = error.response?.data?.message;
+          if (validationErrors) {
+            if (validationErrors.portfolio_link) {
+              setErrors((prev) => ({
+                ...prev,
+                portfolio: validationErrors.portfolio_link[0],
+              }));
+            }
+            if (validationErrors.social_media_link) {
+              setErrors((prev) => ({
+                ...prev,
+                social: validationErrors.social_media_link[0],
+              }));
+            }
+            toast.error("Please fix the validation errors");
+            return;
+          }
+        }
+
+        toast.error(errorMessage);
+      } else {
+        toast.error("Failed to update profile. Please try again.");
+      }
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    console.log("Handle Submit Called");
+    e.preventDefault();
+    setSubmitted(true);
+
+    // Use the same validation approach as signup form
+    const { isValid, firstErrorField } = validateForm();
+
+    if (!isValid) {
+      // Focus on the first error field (like signup form)
+      if (firstErrorField === "portfolio" && portfolioRef.current) {
+        portfolioRef.current.focus();
+      } else if (firstErrorField === "social" && socialRef.current) {
+        socialRef.current.focus();
+      }
+      return;
+    }
+
+    if (!mentorId) {
+      toast.error("Mentor ID not found");
+      return;
+    }
+
+    const originalPortfolio = mentorData?.portfolio_link || "";
+    const originalSocial = mentorData?.social_media_link || "";
+
+    const hasPortfolioChanged = portfolioLink.trim() !== originalPortfolio;
+    const hasSocialChanged = socialMediaLink.trim() !== originalSocial;
+
+    if (!hasPortfolioChanged && !hasSocialChanged) {
+      toast.error("No changes detected");
+      return;
+    }
+
+    const apiPayload: UpdateMentorPayload = {
+      age: mentorData?.age,
+      gender: mentorData?.gender,
+      aadhaar_no: mentorData?.aadhaar_no,
+      phone: userData?.phone,
+      address: mentorData?.address,
+      city: mentorData?.city,
+      district: mentorData?.district,
+      state: mentorData?.state,
+      field: mentorData?.field,
+      current_occupation: mentorData?.current_occupation,
+      designation: mentorData?.designation,
+      experience: mentorData?.experience,
+      workplace: mentorData?.workplace,
+      duration: mentorData?.duration,
+    };
+
+    if (hasPortfolioChanged) {
+      apiPayload.portfolio_link =
+        portfolioLink.trim() === "" ? null : portfolioLink.trim();
+    } else {
+      apiPayload.portfolio_link = mentorData?.portfolio_link;
+    }
+
+    if (hasSocialChanged) {
+      apiPayload.social_media_link =
+        socialMediaLink.trim() === "" ? null : socialMediaLink.trim();
+    } else {
+      apiPayload.social_media_link = mentorData?.social_media_link;
+    }
+
+    updateMentorMutation.mutate(apiPayload);
+  };
+
+  const isLoading = updateMentorMutation.isPending;
 
   return (
     <>
       <div
-        className="h-[25vh] md:h-[30vh]  w-full"
+        className="h-[25vh] md:h-[30vh] w-full"
         style={{
           backgroundImage: `
                           linear-gradient(to bottom, rgba(255, 255, 255, 0.2), rgba(0, 0, 0)),
@@ -59,230 +296,16 @@ export default function EditProfile() {
         </div>
       </div>
       <Navbar />
-      <div className="min-h-dvh w-full flex flex-col justify-center items-center">
-        <div className="grid grid-cols-1 lg:grid-cols-2 w-[90vw] lg:gap-10 justify-items-center my-5">
-          <div className="bg-white overflow-hidden shadow rounded-lg border w-full sm:w-[80%] md:w-[70%] lg:w-full my-10">
-            <div className="px-6 py-5">
-              <div className="text-h3 leading-6 font-medium text-allcharcoal">
-                Edit Personal Information
-              </div>
-            </div>
-            <div className="border-t border-gray-200 px-5">
-              <dl className="divide-y divide-gray-200">
-                <div className="py-5 grid grid-cols-3 items-center gap-4 px-3">
-                  <dt className="text-body-small font-medium text-gray-500">
-                    Full name
-                  </dt>
-                  <dd className="text-gray-900 col-span-2">
-                    <Input
-                      type="text"
-                      value={userData?.name}
-                      placeholder="Enter Your Name"
-                    />
-                  </dd>
-                </div>
-                <div className="py-5 grid grid-cols-3 items-center gap-4 px-3">
-                  <dt className="text-body-small font-medium text-gray-500">
-                    Age
-                  </dt>
-                  <dd className="text-gray-900 col-span-2">
-                    <Input
-                      type="text"
-                      value={mentorData?.age}
-                      placeholder="Your Age"
-                      inputMode="numeric"
-                    />
-                  </dd>
-                </div>
-                <div className="py-5 grid grid-cols-3 items-center gap-4 px-3">
-                  <dt className="text-body-small font-medium text-gray-500">
-                    Gender
-                  </dt>
-                  <dd className="mt-0 text-body text-gray-900 col-span-2 w-full">
-                    <Select>
-                      <SelectTrigger className="w-full border-dashed border-2 focus:border-gray-900 focus:shadow-lg focus-visible:ring-[0px]">
-                        <SelectValue placeholder={mentorData?.gender} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectGroup>
-                          <SelectLabel>Select Gender</SelectLabel>
-                          <SelectItem value="female">Female</SelectItem>
-                          <SelectItem value="male">Male</SelectItem>
-                          <SelectItem value="other">Other</SelectItem>
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
-                  </dd>
-                </div>
-                <div className="py-5 grid grid-cols-3 items-center gap-4 px-3">
-                  <dt className="text-body-small font-medium text-gray-500">
-                    phone
-                  </dt>
-                  <dd className="mt-0 text-body text-gray-900 col-span-2">
-                    <Input
-                      type="tel"
-                      value={userData?.phone}
-                      placeholder="Enter Phone Number"
-                      inputMode="tel"
-                    />
-                  </dd>
-                </div>
-                <div className="py-5 grid grid-cols-3 items-center gap-4 px-3">
-                  <dt className="text-body-small font-medium text-gray-500">
-                    email
-                  </dt>
-                  <dd className="mt-0 text-body text-gray-900 col-span-2">
-                    <Input
-                      type="email"
-                      value={userData?.email}
-                      placeholder="Enter Email Address"
-                      inputMode="email"
-                    />
-                  </dd>
-                </div>
-                <div className="py-5 grid grid-cols-3 items-center gap-4 px-3">
-                  <dt className="text-body-small font-medium text-gray-500">
-                    Address
-                  </dt>
-                  <dd className="mt-0 text-body text-gray-900 col-span-2">
-                    <Input
-                      type="text"
-                      value={mentorData?.address}
-                      placeholder="Enter Address"
-                    />
-                  </dd>
-                </div>
-                <div className="py-5 grid grid-cols-3 items-center gap-4 px-3">
-                  <dt className="text-body-small font-medium text-gray-500">
-                    City
-                  </dt>
-                  <dd className="mt-0 text-body text-gray-900 col-span-2">
-                    <Input
-                      type="text"
-                      value={mentorData?.city}
-                      placeholder="Enter City"
-                    />
-                  </dd>
-                </div>
-                <div className="py-5 grid grid-cols-3 items-center gap-4 px-3">
-                  <dt className="text-body-small font-medium text-gray-500">
-                    District
-                  </dt>
-                  <dd className="mt-0 text-body text-gray-900 col-span-2">
-                    <Input
-                      type="text"
-                      value={mentorData?.district}
-                      placeholder="Enter District"
-                    />
-                  </dd>
-                </div>
-                <div className="py-5 grid grid-cols-3 items-center gap-4 px-3">
-                  <dt className="text-body-small font-medium text-gray-500">
-                    State
-                  </dt>
-                  <dd className="mt-0 text-body text-gray-900 col-span-2">
-                    <Input
-                      type="text"
-                      value={mentorData?.state}
-                      placeholder="Enter State"
-                    />
-                  </dd>
-                </div>
-              </dl>
-            </div>
-          </div>
-          <div className="flex flex-col items-center h-full w-full">
-            <div className="bg-white overflow-hidden shadow rounded-lg border w-full sm:w-[80%] md:w-[70%] lg:w-full my-10">
+      <Tooltip.Provider>
+        <div className="w-full flex flex-col justify-center items-center">
+          <form
+            onSubmit={handleSubmit}
+            className="flex justify-center w-[90vw] my-5"
+          >
+            <div className="bg-white overflow-hidden shadow rounded-lg border w-full sm:w-[80%] md:w-[70%] lg:w-[45%] my-10">
               <div className="px-6 py-5">
-                <div className="text-h3 leading-6 font-medium text-gray-900">
-                  Professional Information
-                </div>
-              </div>
-              <div className="border-t border-gray-200 px-5">
-                <dl className="divide-y divide-gray-200">
-                  <div className="py-5 grid grid-cols-3 items-center gap-4 px-3">
-                    <dt className="text-body-small font-medium text-gray-500">
-                      Expertice
-                    </dt>
-                    <dd className="text-gray-900 col-span-2">
-                      <Input
-                        type="text"
-                        value={mentorData?.field}
-                        placeholder="Enter State"
-                      />
-                    </dd>
-                  </div>
-                  <div className="py-5 grid grid-cols-3 items-center gap-4 px-3">
-                    <dt className="text-body-small font-medium text-gray-500">
-                      Experience
-                    </dt>
-                    <dd className="text-gray-900 col-span-2">
-                      <Input
-                        type="text"
-                        inputMode="numeric"
-                        value={mentorData?.experience}
-                        placeholder="Enter Experience"
-                      />
-                    </dd>
-                  </div>
-                  <div className="py-5 grid grid-cols-3 items-center gap-4 px-3">
-                    <dt className="text-body-small font-medium text-gray-500">
-                      Occupation
-                    </dt>
-                    <dd className="text-gray-900 col-span-2">
-                      <Select>
-                        <SelectTrigger className="w-full border-dashed border-2 focus:border-gray-900 focus:shadow-lg focus-visible:ring-[0px]">
-                          <SelectValue
-                            placeholder={mentorData?.current_occupation}
-                          />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectGroup>
-                            <SelectLabel>Select Gender</SelectLabel>
-                            <SelectItem value="student">Student</SelectItem>
-                            <SelectItem value="working">Working</SelectItem>
-                            <SelectItem value="freelancer">
-                              Freelancer
-                            </SelectItem>
-                            <SelectItem value="other">Other</SelectItem>
-                          </SelectGroup>
-                        </SelectContent>
-                      </Select>
-                    </dd>
-                  </div>
-                  <div className="py-5 grid grid-cols-3 items-center gap-4 px-3">
-                    <dt className="text-body-small font-medium text-gray-500">
-                      Designation
-                    </dt>
-                    <dd className="text-gray-900 col-span-2">
-                      <Input
-                        type="text"
-                        value={mentorData?.designation}
-                        placeholder="Enter Designation"
-                      />
-                    </dd>
-                  </div>
-                  <div className="py-5 grid grid-cols-3 items-center gap-4 px-3">
-                    <dt className="text-body-small font-medium text-gray-500">
-                      Duration
-                    </dt>
-                    <dd className="text-gray-900 col-span-2">
-                      <Input
-                        type="text"
-                        value={mentorData?.duration}
-                        placeholder="Enter Duration"
-                      />
-                    </dd>
-                  </div>
-                </dl>
-              </div>
-            </div>
-
-            {/* Links */}
-            <div className="bg-white overflow-hidden shadow rounded-lg border w-full sm:w-[80%] md:w-[70%] lg:w-full lg:mt-auto my-10">
-              <div className="px-6 py-5">
-                <div className="text-h3 leading-6 font-medium text-gray-900">
-                  Social Links
+                <div className="text-h3 leading-6 font-medium text-allcharcoal">
+                  Edit Personal Information
                 </div>
               </div>
               <div className="border-t border-gray-200 px-5">
@@ -291,37 +314,131 @@ export default function EditProfile() {
                     <dt className="text-body-small font-medium text-gray-500">
                       Portfolio
                     </dt>
-                    <dd className="text-gray-900 col-span-2">
-                      <Input
-                        type="text"
-                        name="portfolio"
-                        placeholder="Portfolio Link (optional)"
-                      />
+                    <dd className="text-gray-900 col-span-2 relative">
+                      <Tooltip.Root
+                        open={
+                          submitted &&
+                          !!errors.portfolio &&
+                          focusedField === "portfolio"
+                        }
+                      >
+                        <Tooltip.Trigger asChild>
+                          <Input
+                            ref={portfolioRef}
+                            type="url"
+                            name="portfolio"
+                            className="pr-10"
+                            placeholder="Portfolio Link (optional)"
+                            value={portfolioLink}
+                            onChange={handlePortfolioChange}
+                            onFocus={() => setFocusedField("portfolio")}
+                            onBlur={() => setFocusedField(null)}
+                            disabled={isLoading}
+                          />
+                        </Tooltip.Trigger>
+                        <Tooltip.Portal>
+                          <Tooltip.Content
+                            side="bottom"
+                            align="center"
+                            className="bg-red-500 text-white px-3 rounded-lg shadow-lg z-50"
+                            sideOffset={5}
+                          >
+                            {errors.portfolio}
+                            <Tooltip.Arrow className="fill-red-500" />
+                          </Tooltip.Content>
+                        </Tooltip.Portal>
+                      </Tooltip.Root>
+                      {portfolioLink && (
+                        <span
+                          className="absolute right-1 p-3 rounded-2xl top-1/2 transform -translate-y-1/2 cursor-pointer text-allcharcoal hover:bg-gray-100"
+                          onClick={handleClearPortfolio}
+                          aria-hidden="true"
+                        >
+                          <X className="w-4 h-4 text-gray-500 hover:text-gray-700" />
+                        </span>
+                      )}
                     </dd>
                   </div>
                   <div className="py-5 grid grid-cols-3 items-center gap-4 px-3">
                     <dt className="text-body-small font-medium text-gray-500">
                       Social Media
                     </dt>
-                    <dd className="text-gray-900 col-span-2">
-                      <Input
-                        type="text"
-                        name="social"
-                        placeholder="Social Media Link (optional)"
-                      />
+                    <dd className="text-gray-900 col-span-2 relative">
+                      <Tooltip.Root
+                        open={
+                          submitted &&
+                          !!errors.social &&
+                          focusedField === "social"
+                        }
+                      >
+                        <Tooltip.Trigger asChild>
+                          <Input
+                            ref={socialRef}
+                            type="url"
+                            name="social"
+                            className="pr-10"
+                            placeholder="Social Media Link (optional)"
+                            value={socialMediaLink}
+                            onChange={handleSocialChange}
+                            onFocus={() => setFocusedField("social")}
+                            onBlur={() => setFocusedField(null)}
+                            disabled={isLoading}
+                          />
+                        </Tooltip.Trigger>
+                        <Tooltip.Portal>
+                          <Tooltip.Content
+                            side="bottom"
+                            align="center"
+                            className="bg-red-500 text-white px-3 rounded-lg shadow-lg z-50"
+                            sideOffset={5}
+                          >
+                            {errors.social}
+                            <Tooltip.Arrow className="fill-red-500" />
+                          </Tooltip.Content>
+                        </Tooltip.Portal>
+                      </Tooltip.Root>
+                      {socialMediaLink && (
+                        <span
+                          className="absolute right-1 p-3 rounded-2xl top-1/2 transform -translate-y-1/2 cursor-pointer text-allcharcoal hover:bg-gray-100"
+                          onClick={handleClearSocialMedia}
+                          aria-hidden="true"
+                        >
+                          <X className="w-4 h-4 text-gray-500 hover:text-gray-700" />
+                        </span>
+                      )}
                     </dd>
+                  </div>
+                  <div className="py-10 px-3 flex items-center justify-between md:justify-center gap-4">
+                    <Button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        router.push("/profile");
+                      }}
+                      disabled={isLoading}
+                      className="py-5 border-2 border-allcharcoal text-allcharcoal bg-transparent hover:bg-allcharcoal hover:text-allsnowflake cursor-pointer"
+                    >
+                      <span className="flex justify-center items-center px-3 gap-3 text-lg">
+                        <MoveLeft /> Cancel
+                      </span>
+                    </Button>
+                    <Button
+                      type="submit"
+                      onClick={handleSubmit}
+                      disabled={isLoading}
+                      className="py-5 bg-allpurple text-allsnowflake text-lg border-2 border-allpurple cursor-pointer hover:bg-indigo-700 disabled:opacity-50 disabled:bg-gray-500"
+                    >
+                      <span className="flex justify-center items-center px-3 text-lg">
+                        {isLoading ? "Updating..." : "Submit Changes"}
+                      </span>
+                    </Button>
                   </div>
                 </dl>
               </div>
             </div>
-          </div>
+          </form>
         </div>
-        <div className="flex items-center justify-center w-[90vw] mb-10">
-          <Button className="py-5 px-5 bg-allpurple text-allsnowflake text-lg">
-            Submit Changes
-          </Button>
-        </div>
-      </div>
+      </Tooltip.Provider>
       <Footer />
     </>
   );

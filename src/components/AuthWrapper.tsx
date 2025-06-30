@@ -44,12 +44,12 @@ export default function AuthWrapper({
         return;
       }
 
-      // if (!userToken) {
-      //   console.warn("AuthWrapper: No token");
-      //   router.replace("/login");
-      //   setIsChecking(false);
-      //   return;
-      // }
+      if (!userToken) {
+        console.warn("AuthWrapper: No token");
+        router.replace("/login");
+        setIsChecking(false);
+        return;
+      }
 
       try {
         const response = await axios.get(
@@ -188,7 +188,7 @@ export default function AuthWrapper({
             checkDetailedAuth();
           }, 10000); // Retry after 10 seconds
         } else {
-          toast.error("Session expired. Please log in again.");
+          toast.error("Session expired. Please log in again. nye nye");
           reset();
           router.replace("/login");
         }
