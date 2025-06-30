@@ -310,11 +310,11 @@ export default function EditProfile() {
               </div>
               <div className="border-t border-gray-200 px-5">
                 <dl className="divide-y divide-gray-200">
-                  <div className="py-5 grid grid-cols-3 items-center gap-4 px-3">
+                  <div className="py-5 md:grid md:grid-cols-3 md:gap-4 md:px-3">
                     <dt className="text-body-small font-medium text-gray-500">
                       Portfolio
                     </dt>
-                    <dd className="text-gray-900 col-span-2 relative">
+                    <dd className="mt-2 md:mt-0 text-gray-900 col-span-2 relative">
                       <Tooltip.Root
                         open={
                           submitted &&
@@ -359,11 +359,11 @@ export default function EditProfile() {
                       )}
                     </dd>
                   </div>
-                  <div className="py-5 grid grid-cols-3 items-center gap-4 px-3">
+                  <div className="py-5 md:grid md:grid-cols-3 md:gap-4 md:px-3">
                     <dt className="text-body-small font-medium text-gray-500">
                       Social Media
                     </dt>
-                    <dd className="text-gray-900 col-span-2 relative">
+                    <dd className="mt-2 md:mt-0 text-gray-900 col-span-2 relative">
                       <Tooltip.Root
                         open={
                           submitted &&
