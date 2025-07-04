@@ -21,7 +21,7 @@ import {
 interface AllmaxedData {
   id: string;
   title: string;
-  appliedCount: number;
+  appliedCount: string;
   location: string;
   date: string;
   module: string;
@@ -31,7 +31,7 @@ interface AllmaxedData {
 interface SkillstormData {
   id: string;
   topic: string;
-  appliedCount: number;
+  appliedCount: string;
   location: string;
   date: string;
   level_required: string;
@@ -126,17 +126,15 @@ export default function Appliedpage() {
     fetchAllData();
   }, [userToken]);
 
-  const allmaxedCards = allmaxedData
-    .slice(startIndex, endIndex)
-    .map((card, index) => {
-      const allmaxedCard = card as AllmaxedData;
+  const allmaxedCards = allmaxedData.slice(startIndex, endIndex).map((card) => {
+    const allmaxedCard = card as AllmaxedData;
 
-      return (
+    return (
+      <div key={allmaxedCard.id} id={`card-${allmaxedCard.id}`}>
         <AllmaxedCard
           programId={allmaxedCard.id}
-          key={startIndex + index}
           title={allmaxedCard.title}
-          appliedCount={startIndex + index || 0}
+          appliedCount={allmaxedCard.id || "0"}
           location={allmaxedCard.location}
           date={new Date(allmaxedCard.date).toLocaleDateString("en-US", {
             day: "2-digit",
@@ -148,31 +146,33 @@ export default function Appliedpage() {
             allmaxedCard.level_required.slice(1)
           }
         />
-      );
-    });
+      </div>
+    );
+  });
 
   const skillstormCards = skillstormData
     .slice(startIndex, endIndex)
-    .map((card, index) => {
+    .map((card) => {
       const skillstormCard = card as SkillstormData;
       return (
-        <SkillstormCard
-          workshopId={skillstormCard.id}
-          key={startIndex + index}
-          topic={skillstormCard.topic}
-          appliedCount={startIndex + index || 0}
-          location={skillstormCard.location}
-          date={new Date(skillstormCard.date).toLocaleDateString("en-US", {
-            day: "2-digit",
-            month: "short",
-          })}
-          level_required={
-            skillstormCard.level_required.charAt(0).toUpperCase() +
-            skillstormCard.level_required.slice(1)
-          }
-          duration={skillstormCard.duration}
-          pay={skillstormCard.pay}
-        />
+        <div key={skillstormCard.id} id={`card-${skillstormCard.id}`}>
+          <SkillstormCard
+            workshopId={skillstormCard.id}
+            topic={skillstormCard.topic}
+            appliedCount={skillstormCard.id || "0"}
+            location={skillstormCard.location}
+            date={new Date(skillstormCard.date).toLocaleDateString("en-US", {
+              day: "2-digit",
+              month: "short",
+            })}
+            level_required={
+              skillstormCard.level_required.charAt(0).toUpperCase() +
+              skillstormCard.level_required.slice(1)
+            }
+            duration={skillstormCard.duration}
+            pay={skillstormCard.pay}
+          />
+        </div>
       );
     });
 
