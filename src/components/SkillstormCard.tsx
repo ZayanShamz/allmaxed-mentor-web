@@ -2,12 +2,13 @@
 
 import axios, { AxiosError } from "axios";
 import { useState } from "react";
-import toast from "react-hot-toast";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/context/authStore";
-import { MapPin, Users, MoveRight } from "lucide-react";
-import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
-import { usePathname } from "next/navigation";
+// ui
+import toast from "react-hot-toast";
+import { MapPin, Users, MoveRight } from "lucide-react";
 import { Button } from "./ui/button";
 import {
   AlertDialog,
@@ -24,13 +25,22 @@ import {
 interface SkillstormProps {
   workshopId?: string;
   topic?: string;
-  appliedCount?: number;
+  appliedCount?: string;
   location?: string;
   date?: string;
   level_required?: string;
   duration?: string;
   pay?: string;
 }
+
+const withdrawApplication = async (workshopId: string, userToken: string) => {
+  const response = await axios.post(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/withdraw_short_term_application`,
+    { program_id: parseInt(workshopId, 10) },
+    { headers: { Authorization: `Bearer ${userToken}` } }
+  );
+  return response.data;
+};
 
 const SkillstormCard: React.FC<SkillstormProps> = ({
   workshopId,
@@ -43,8 +53,65 @@ const SkillstormCard: React.FC<SkillstormProps> = ({
   pay,
 }) => {
   const pathname = usePathname();
+  const queryClient = useQueryClient();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { userToken } = useAuthStore();
-  const [isLoading, setIsLoading] = useState(false);
+  const [isWithdrawingLocal, setIsWithdrawingLocal] = useState(false);
+
+  // Function to handle card click with state preservation
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Don't navigate if clicking on withdrawal button or alert dialog
+    if (
+      (e.target as HTMLElement).closest("button") ||
+      (e.target as HTMLElement).closest('[role="dialog"]')
+    ) {
+      return;
+    }
+
+    // Get current page state from URL or defaults
+    const currentCategory = searchParams.get("category") || "skillstorm";
+    const currentPage = searchParams.get("page") || "1";
+
+    // Navigate to workshop details with return state
+    const returnParams = new URLSearchParams();
+    returnParams.set("category", currentCategory);
+    returnParams.set("page", currentPage);
+    returnParams.set("cardId", workshopId || "");
+
+    router.push(
+      `/home/workshops/${workshopId}?returnTo=${encodeURIComponent(
+        `/home?${returnParams.toString()}`
+      )}`
+    );
+  };
+
+  // Mutation for withdrawing application
+  const withdrawMutation = useMutation({
+    mutationFn: () => withdrawApplication(workshopId!, userToken!),
+    onMutate: () => {
+      setIsWithdrawingLocal(true);
+    },
+    onSettled: () => {
+      setTimeout(() => setIsWithdrawingLocal(false), 1500);
+    },
+    onSuccess: () => {
+      toast.success("Application withdrawn successfully!");
+      // Invalidate and refetch workshop data to get updated applications
+      queryClient.invalidateQueries({ queryKey: ["workshop", workshopId] });
+    },
+    onError: (error: unknown) => {
+      if (error instanceof AxiosError) {
+        if (error.response?.status === 400) {
+          toast.error("No application found for this program");
+        } else {
+          toast.error("Failed to withdraw. Please try again.");
+        }
+      } else {
+        toast.error("An unexpected error occurred");
+      }
+    },
+  });
 
   const handleWithdrawal = async () => {
     if (!userToken) {
@@ -57,38 +124,15 @@ const SkillstormCard: React.FC<SkillstormProps> = ({
       return;
     }
 
-    setIsLoading(true);
-    try {
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/withdraw_short_term_application`,
-        { program_id: parseInt(workshopId, 10) },
-        { headers: { Authorization: `Bearer ${userToken}` } }
-      );
-      if (response.status === 200) {
-        toast.success("Application withdrawn successfully!");
-      }
-    } catch (error: unknown) {
-      if (error instanceof AxiosError) {
-        if (error.response?.status === 400) {
-          toast.error("No application found for this program");
-        } else {
-          toast.error("Failed to withdraw. Please try again.");
-        }
-      } else {
-        toast.error("An unexpected error occurred");
-      }
-    } finally {
-      setIsLoading(false);
-    }
+    withdrawMutation.mutate();
   };
 
   return (
-    <div className="flex flex-col justify-center bg-white rounded-xl border border-gray-200 hover:shadow-lg transition-shadow duration-300 cursor-pointer w-full h-full">
-      <Link
-        href={`home/workshops/${workshopId}`}
-        key={workshopId}
-        className="h-full pt-8 px-8 pb-3"
-      >
+    <div
+      className="flex flex-col justify-center bg-white rounded-xl border border-gray-200 hover:shadow-lg transition-shadow duration-300 cursor-pointer w-full h-full"
+      onClick={handleCardClick}
+    >
+      <div className="h-full pt-8 px-8 pb-3">
         <div className="flex flex-col w-full h-full justify-between ">
           {/* Top section */}
           <div className="flex flex-col">
@@ -137,7 +181,8 @@ const SkillstormCard: React.FC<SkillstormProps> = ({
             </div>
           </div>
         </div>
-      </Link>
+      </div>
+
       {/* Applied Section */}
       <div
         className={`${
@@ -145,20 +190,21 @@ const SkillstormCard: React.FC<SkillstormProps> = ({
             ? "w-full flex justify-center items-center border-t border-gray-600 py-5 mt-auto"
             : "hidden"
         }`}
+        onClick={(e) => e.stopPropagation()}
       >
         <AlertDialog>
           <AlertDialogTrigger asChild className="w-full">
             <Button
               className="w-fit bg-allpurple hover:bg-indigo-700 text-white rounded-full transition-colors duration-200 shadow-none border-0 cursor-pointer px-8"
-              onClick={handleWithdrawal}
+              // disabled={isWithdrawingLocal}
               disabled
             >
-              {!isLoading ? (
+              {isWithdrawingLocal ? (
+                "Withdrawing..."
+              ) : (
                 <span className="flex justify-center items-center gap-2">
                   Withdraw Application <MoveRight />
                 </span>
-              ) : (
-                "Withdrawing..."
               )}
             </Button>
           </AlertDialogTrigger>

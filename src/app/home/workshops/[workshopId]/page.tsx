@@ -2,20 +2,12 @@
 
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import Link from "next/link";
 import { SlashIcon } from "lucide-react";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
-import { useParams } from "next/navigation";
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useParams, useSearchParams, useRouter } from "next/navigation";
+import { useMemo, useState } from "react";
 import { useAuthStore } from "@/context/authStore";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios, { AxiosError } from "axios";
 import toast from "react-hot-toast";
 
@@ -44,39 +36,138 @@ interface workshopDetails {
   }[];
 }
 
+const fetchWorkshopDetails = async (
+  workshopId: string,
+  userToken: string
+): Promise<workshopDetails> => {
+  const response = await axios.get(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/short_term_programs/${workshopId}`,
+    {
+      headers: { Authorization: `Bearer ${userToken}` },
+    }
+  );
+  return response.data;
+};
+
+const applyForWorkshop = async (workshopId: string, userToken: string) => {
+  const response = await axios.post(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/apply_for_short_term_program`,
+    { program_id: parseInt(workshopId, 10) },
+    { headers: { Authorization: `Bearer ${userToken}` } }
+  );
+  return response.data;
+};
+
+const withdrawApplication = async (workshopId: string, userToken: string) => {
+  const response = await axios.post(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/withdraw_short_term_application`,
+    { program_id: parseInt(workshopId, 10) },
+    { headers: { Authorization: `Bearer ${userToken}` } }
+  );
+  return response.data;
+};
+
 export default function WorkshopDetailsPage() {
   const { workshopId } = useParams<{ workshopId: string }>();
+
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const queryClient = useQueryClient();
+
   const userToken = useAuthStore((state) => state.userToken);
-  const [isLoading, setIsLoading] = useState(false);
   const userId = useAuthStore((state) => state.mentorData?.user_id);
 
-  const [workshop, setWorkshop] = useState<workshopDetails | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const returnTo = searchParams.get("returnTo");
 
-  const fetchWorkshopDetails = useCallback(async () => {
-    setError(null);
-    setIsLoading(true);
-    try {
-      const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/short_term_programs/${workshopId}`,
-        {
-          headers: { Authorization: `Bearer ${userToken}` },
+  // to manage ze buttons
+  const [isApplyingLocal, setIsApplyingLocal] = useState(false);
+  const [isWithdrawingLocal, setIsWithdrawingLocal] = useState(false);
+
+  const handleBackNavigation = () => {
+    if (returnTo) {
+      // Decode and navigate to the return URL with preserved state
+      router.push(decodeURIComponent(returnTo));
+    } else {
+      // Fallback to regular back navigation
+      router.back();
+    }
+  };
+
+  // Query for fetching workshop details
+  const {
+    data: workshop,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ["workshop", workshopId],
+    queryFn: () => fetchWorkshopDetails(workshopId!, userToken!),
+    enabled: !!workshopId && !!userToken,
+    staleTime: 5 * 60 * 1000,
+    retry: (failureCount, error) => {
+      // Don't retry on 401/403 errors
+      if (
+        error instanceof AxiosError &&
+        [401, 403].includes(error.response?.status || 0)
+      ) {
+        return false;
+      }
+      return failureCount < 3;
+    },
+  });
+
+  // Mutation for applying to workshop
+  const applyMutation = useMutation({
+    mutationFn: () => applyForWorkshop(workshopId!, userToken!),
+    onMutate: () => {
+      setIsApplyingLocal(true);
+    },
+    onSettled: () => {
+      setTimeout(() => setIsApplyingLocal(false), 1500);
+    },
+    onSuccess: () => {
+      toast.success("Application submitted successfully!");
+      queryClient.invalidateQueries({ queryKey: ["workshop", workshopId] });
+    },
+    onError: (error: unknown) => {
+      if (error instanceof AxiosError) {
+        if (error.response?.status === 400) {
+          toast.error("You have already applied for this program");
+        } else {
+          toast.error("Failed to apply. Please try again.");
         }
-      );
-      setWorkshop(response.data);
-    } catch (error) {
-      console.error("Error fetching program details:", error);
-      setError("Failed to fetch program details");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [workshopId, userToken]);
+      } else {
+        toast.error("An unexpected error occurred");
+      }
+    },
+  });
 
-  useEffect(() => {
-    if (workshopId && userToken) {
-      fetchWorkshopDetails();
-    }
-  }, [workshopId, userToken, fetchWorkshopDetails]);
+  // Mutation for withdrawing application
+  const withdrawMutation = useMutation({
+    mutationFn: () => withdrawApplication(workshopId!, userToken!),
+    onMutate: () => {
+      setIsWithdrawingLocal(true);
+    },
+    onSettled: () => {
+      setTimeout(() => setIsWithdrawingLocal(false), 1500);
+    },
+    onSuccess: () => {
+      toast.success("Application withdrawn successfully!");
+      // Invalidate and refetch workshop data to get updated applications
+      queryClient.invalidateQueries({ queryKey: ["workshop", workshopId] });
+    },
+    onError: (error: unknown) => {
+      if (error instanceof AxiosError) {
+        if (error.response?.status === 400) {
+          toast.error("No application found for this program");
+        } else {
+          toast.error("Failed to withdraw. Please try again.");
+        }
+      } else {
+        toast.error("An unexpected error occurred");
+      }
+    },
+  });
 
   const hasApplied = useMemo(() => {
     if (!workshop || !workshop.applications || !userId) return false;
@@ -94,30 +185,7 @@ export default function WorkshopDetailsPage() {
       return;
     }
 
-    setIsLoading(true);
-    try {
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/apply_for_short_term_program`,
-        { program_id: parseInt(workshopId, 10) },
-        { headers: { Authorization: `Bearer ${userToken}` } }
-      );
-      if (response.status === 201) {
-        toast.success("Application submitted successfully!");
-        await fetchWorkshopDetails();
-      }
-    } catch (error: unknown) {
-      if (error instanceof AxiosError) {
-        if (error.response?.status === 400) {
-          toast.error("You have already applied for this program");
-        } else {
-          toast.error("Failed to apply. Please try again.");
-        }
-      } else {
-        toast.error("An unexpected error occurred");
-      }
-    } finally {
-      setIsLoading(false);
-    }
+    applyMutation.mutate();
   };
 
   const handleWithdrawal = async () => {
@@ -131,31 +199,45 @@ export default function WorkshopDetailsPage() {
       return;
     }
 
-    setIsLoading(true);
-    try {
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/withdraw_short_term_application`,
-        { program_id: parseInt(workshopId, 10) },
-        { headers: { Authorization: `Bearer ${userToken}` } }
-      );
-      if (response.status === 200) {
-        toast.success("Application withdrawn successfully!");
-        await fetchWorkshopDetails();
-      }
-    } catch (error: unknown) {
-      if (error instanceof AxiosError) {
-        if (error.response?.status === 400) {
-          toast.error("No application found for this program");
-        } else {
-          toast.error("Failed to withdraw. Please try again.");
-        }
-      } else {
-        toast.error("An unexpected error occurred");
-      }
-    } finally {
-      setIsLoading(false);
-    }
+    withdrawMutation.mutate();
   };
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <>
+        <div className="h-[25vh] md:h-[30vh] lg:h-[40vh] w-full">
+          <Navbar />
+        </div>
+        <section className="w-full bg-allsnowflake flex items-center justify-center py-20">
+          <div className="text-h3 text-allpurple">
+            Loading workshop details...
+          </div>
+        </section>
+        <Footer />
+      </>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <>
+        <div className="h-[25vh] md:h-[30vh] lg:h-[40vh] w-full">
+          <Navbar />
+        </div>
+        <section className="w-full bg-allsnowflake flex flex-col items-center justify-center py-20">
+          <div className="text-h3 text-red-500 mb-4">
+            Error loading workshop details
+          </div>
+          <Button onClick={() => refetch()} className="px-6 py-2">
+            Try Again
+          </Button>
+        </section>
+        <Footer />
+      </>
+    );
+  }
 
   return (
     <>
@@ -173,41 +255,22 @@ export default function WorkshopDetailsPage() {
       >
         <Navbar />
         <div className="max-w-screen-2xl flex items-center justify-start mx-auto h-full px-5">
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <Link
-                    href="/home"
-                    className="text-h3 font-normal text-gray-400 hover:text-gray-200 hover:underline underline-offset-4 transition"
-                  >
-                    Allmax&apos;d
-                  </Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator>
-                <SlashIcon className="h-20" />
-              </BreadcrumbSeparator>
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <Link
-                    href="/home"
-                    className="text-h3 font-normal text-gray-400 hover:text-gray-200 hover:underline underline-offset-4"
-                  >
-                    Workshops
-                  </Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator>
-                <SlashIcon />
-              </BreadcrumbSeparator>
-              <BreadcrumbItem>
-                <BreadcrumbPage className="text-[clamp(22px,3.5vw,28px)] text-allsnowflake cursor-default">
-                  {workshop?.topic}
-                </BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
+          <div className="h-fit w-full flex items-center">
+            <button
+              onClick={handleBackNavigation}
+              className="text-h3 font-normal pe-1 text-gray-400 cursor-pointer hover:text-gray-200 hover:underline underline-offset-4 transition"
+            >
+              Allmax&apos;d
+            </button>
+            <SlashIcon className="w-5 h-5 text-gray-400 -rotate-20" />
+            <div className="text-h3 font-normal pe-1 text-gray-400 cursor-default">
+              Workshops
+            </div>
+            <SlashIcon className="w-5 h-5 text-gray-300 -rotate-20" />
+            <div className="text-h3 font-normal text-allsnowflake cursor-default">
+              {workshop?.topic}
+            </div>
+          </div>
         </div>
       </div>
 
@@ -288,17 +351,19 @@ export default function WorkshopDetailsPage() {
                 <Button
                   className="px-10 py-5 rounded-sm border-2 border-red-500 text-red-500 text-lg bg-transparent cursor-pointer hover:bg-red-500 hover:text-allsnowflake"
                   onClick={handleWithdrawal}
-                  disabled={isLoading || !!error}
+                  disabled={isWithdrawingLocal}
                 >
-                  Withdraw Application
+                  {isWithdrawingLocal
+                    ? "Withdrawing..."
+                    : "Withdraw Application"}
                 </Button>
               ) : (
                 <Button
                   className="px-10 py-5 rounded-sm border-2 border-allpurple text-allpurple text-lg bg-transparent cursor-pointer hover:bg-allpurple hover:text-allsnowflake"
                   onClick={handleApply}
-                  disabled={isLoading || !!error}
+                  disabled={isApplyingLocal}
                 >
-                  Apply Now
+                  {isApplyingLocal ? "Applying..." : "Apply Now"}
                 </Button>
               )}
             </div>

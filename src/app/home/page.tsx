@@ -1,14 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import axios from "axios";
+import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "@/context/authStore";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import AllmaxedCard from "@/components/AllmaxedCard";
 import SkillstormCard from "@/components/SkillstormCard";
 import LocationSelect from "@/components/LocationSelect";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+// ui
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -29,7 +32,7 @@ import {
 interface AllmaxedCardData {
   id: string;
   title: string;
-  appliedCount: number;
+  appliedCount: string;
   location: string;
   date: string;
   module: string;
@@ -39,7 +42,7 @@ interface AllmaxedCardData {
 interface SkillstormCardData {
   id: string;
   topic: string;
-  appliedCount: number;
+  appliedCount: string;
   location: string;
   date: string;
   level_required: string;
@@ -49,87 +52,119 @@ interface SkillstormCardData {
 
 export default function HomePage() {
   const { userToken } = useAuthStore();
-  // console.log("User Token:", userToken);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const cardGridRef = useRef<HTMLDivElement>(null);
+  const isInitialMount = useRef(true); // Track initial mount
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [cardData, setCardData] = useState<
-    AllmaxedCardData[] | SkillstormCardData[]
-  >([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [cardsPerPage, setCardsPerPage] = useState(9);
   const [selectedCategory, setSelectedCategory] = useState("allmaxed");
+  const [cardsPerPage, setCardsPerPage] = useState(9);
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [selectedCategory]);
+  // Function to update URL with current state
+  const updateURL = useCallback(
+    (category: string, page: number) => {
+      const params = new URLSearchParams();
+      params.set("category", category);
+      params.set("page", page.toString());
+      router.replace(`/home?${params.toString()}`, { scroll: false });
+    },
+    [router]
+  );
 
+  // Sync initial state with URL on mount
   useEffect(() => {
-    const fetchData = async () => {
+    if (isInitialMount.current) {
+      const pageParam = searchParams.get("page");
+      const categoryParam = searchParams.get("category");
+      const newPage = pageParam ? parseInt(pageParam, 10) : 1;
+      const newCategory = categoryParam || "allmaxed";
+
+      setCurrentPage(newPage);
+      setSelectedCategory(newCategory);
+      updateURL(newCategory, newPage);
+      isInitialMount.current = false; // Mark as not initial after first run
+    }
+  }, [searchParams, updateURL]); // Dependencies are safe here
+
+  // Query for data fetching
+  const {
+    data: cardData = [],
+    isLoading,
+    error,
+    isError,
+  } = useQuery({
+    queryKey: ["programs", selectedCategory, userToken],
+    queryFn: async (): Promise<AllmaxedCardData[] | SkillstormCardData[]> => {
       if (!userToken) {
-        console.warn("No user token available, skipping API call");
-        return;
+        throw new Error("No user token available");
       }
 
-      setLoading(true);
-      setError(null);
-      try {
-        const endpoint =
-          selectedCategory === "allmaxed"
-            ? `${process.env.NEXT_PUBLIC_API_URL}/api/long_term_programs`
-            : `${process.env.NEXT_PUBLIC_API_URL}/api/short_term_programs`;
+      const endpoint =
+        selectedCategory === "allmaxed"
+          ? `${process.env.NEXT_PUBLIC_API_URL}/api/long_term_programs`
+          : `${process.env.NEXT_PUBLIC_API_URL}/api/short_term_programs`;
 
-        const response = await axios.get(endpoint, {
-          headers: { Authorization: `Bearer ${userToken}` },
-        });
-        console.log("API Response:", response.data);
+      const response = await axios.get(endpoint, {
+        headers: { Authorization: `Bearer ${userToken}` },
+      });
 
-        setCardData(response.data);
-      } catch (error: unknown) {
-        if (error instanceof Error) {
-          console.error("Error fetching data:", error.message);
-          setError(error.message);
-        } else {
-          console.error("Unexpected error:", error);
-          setError("An unexpected error occurred");
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, [userToken, selectedCategory]);
+      console.log("API Response:", response.data);
+      return response.data;
+    },
+    enabled: !!userToken,
+    staleTime: 5 * 60 * 1000,
+    retry: 2,
+  });
 
-  // Change cardsPerPage 9 - 8 based on screen size
+  // Change cardsPerPage based on screen size
   useEffect(() => {
     const handleResize = () => {
       setCardsPerPage(window.innerWidth < 1024 ? 8 : 9);
     };
-
     handleResize();
-
     window.addEventListener("resize", handleResize);
-
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  // Scroll to last clicked card after data loads
+  useEffect(() => {
+    const lastClickedCardId = searchParams.get("cardId");
+    if (lastClickedCardId && cardData.length > 0 && !isLoading) {
+      setTimeout(() => {
+        const cardElement = document.getElementById(
+          `card-${lastClickedCardId}`
+        );
+        if (cardElement) {
+          cardElement.scrollIntoView({ behavior: "smooth", block: "center" });
+          cardElement.style.boxShadow = "0 0 20px rgba(147, 51, 234, 0.3)";
+          setTimeout(() => {
+            cardElement.style.boxShadow = "";
+          }, 2000);
+        }
+      }, 100);
+    }
+  }, [searchParams, cardData, isLoading]);
+
+  // Update URL when state changes
+  useEffect(() => {
+    updateURL(selectedCategory, currentPage);
+  }, [selectedCategory, currentPage, updateURL]);
 
   const totalCards = cardData.length;
   const totalPages = Math.ceil(totalCards / cardsPerPage);
   const startIndex = (currentPage - 1) * cardsPerPage;
   const endIndex = startIndex + cardsPerPage;
 
-  const displayedCards = cardData
-    .slice(startIndex, endIndex)
-    .map((card, index) => {
-      if (selectedCategory === "allmaxed") {
-        const allmaxedCard = card as AllmaxedCardData;
-        // console.log("allmaxedCard :", allmaxedCard.id);
-        return (
+  const displayedCards = cardData.slice(startIndex, endIndex).map((card) => {
+    if (selectedCategory === "allmaxed") {
+      const allmaxedCard = card as AllmaxedCardData;
+      return (
+        <div key={allmaxedCard.id} id={`card-${allmaxedCard.id}`}>
           <AllmaxedCard
             programId={allmaxedCard.id}
-            key={startIndex + index}
             title={allmaxedCard.title}
-            appliedCount={startIndex + index || 0}
+            appliedCount={allmaxedCard.id || "0"}
             location={allmaxedCard.location}
             date={new Date(allmaxedCard.date).toLocaleDateString("en-US", {
               day: "2-digit",
@@ -141,15 +176,16 @@ export default function HomePage() {
               allmaxedCard.level_required.slice(1)
             }
           />
-        );
-      } else {
-        const skillstormCard = card as SkillstormCardData;
-        return (
+        </div>
+      );
+    } else {
+      const skillstormCard = card as SkillstormCardData;
+      return (
+        <div key={skillstormCard.id} id={`card-${skillstormCard.id}`}>
           <SkillstormCard
             workshopId={skillstormCard.id}
-            key={startIndex + index}
             topic={skillstormCard.topic}
-            appliedCount={startIndex + index || 0}
+            appliedCount={skillstormCard.id || "0"}
             location={skillstormCard.location}
             date={new Date(skillstormCard.date).toLocaleDateString("en-US", {
               day: "2-digit",
@@ -162,12 +198,24 @@ export default function HomePage() {
             duration={skillstormCard.duration}
             pay={skillstormCard.pay}
           />
-        );
-      }
-    });
+        </div>
+      );
+    }
+  });
 
   const handlePageChange = (page: number) => {
-    setCurrentPage(page);
+    if (page >= 1 && page <= totalPages) {
+      console.log("Changing to page:", page);
+      setCurrentPage(page);
+      updateURL(selectedCategory, page);
+    }
+  };
+
+  const getErrorMessage = () => {
+    if (error instanceof Error) {
+      return error.message;
+    }
+    return "An unexpected error occurred";
   };
 
   return (
@@ -190,7 +238,7 @@ export default function HomePage() {
             Let’s Share Your Skills!
           </h1>
           <div className="flex justify-center items-center py-4">
-            <p className="title-subtext text-white text-center  max-w-2xl leading-tight">
+            <p className="title-subtext text-white text-center max-w-2xl leading-tight">
               Find opportunities that suit you the best and apply for them.
               Share your knowledge with the youth and let them to succeed...
             </p>
@@ -200,14 +248,17 @@ export default function HomePage() {
 
       <section className="w-full min-h-screen bg-allsnowflake flex flex-col items-center justify-start py-20">
         <div className="w-[90vw] sm:w-[70vw] md:w-[80vw] lg:w-[70vw] bg-white border rounded-md p-5">
-          {/* Desktop Layout - Joined Selects (sm and larger) */}
           <div className="hidden md:flex gap-4 items-center">
-            {/* Joined Select Container */}
             <div className="flex flex-1 bg-[#EBE8FF] rounded-sm overflow-hidden min-w-0 py-2 items-center">
               <div className="flex-1 min-w-0 border-r-2 border-gray-300">
                 <Select
                   value={selectedCategory}
-                  onValueChange={(value) => setSelectedCategory(value)}
+                  onValueChange={(value) => {
+                    console.log("Category changed to:", value);
+                    setSelectedCategory(value);
+                    setCurrentPage(1);
+                    updateURL(value, 1);
+                  }}
                 >
                   <SelectTrigger className="w-full px-5 py-3 bg-transparent border-none rounded-none text-allcharcoal text-md shadow-none hover:bg-purple-150 focus:ring-0 focus:border-none cursor-pointer">
                     <SelectValue placeholder="Select Category" />
@@ -218,11 +269,9 @@ export default function HomePage() {
                   </SelectContent>
                 </Select>
               </div>
-
               <div className="flex-1 min-w-0 border-r-2 border-gray-300">
                 <LocationSelect />
               </div>
-
               <div className="flex-1 min-w-0">
                 <Select disabled>
                   <SelectTrigger className="w-full px-5 py-3 bg-transparent border-none rounded-none text-allcharcoal text-md shadow-none hover:bg-purple-150 focus:ring-0 focus:border-none cursor-pointer">
@@ -241,22 +290,23 @@ export default function HomePage() {
                 </Select>
               </div>
             </div>
-
             <div className="flex-shrink-0">
               <Button className="py-6 px-8 bg-allpurple hover:bg-indigo-700 text-white rounded-sm transition-colors duration-200 shadow-none border-0 cursor-pointer">
                 Search
               </Button>
             </div>
           </div>
-
-          {/* Mobile Layout - Stacked Selects (smaller than sm) */}
           <div className="flex md:hidden flex-col gap-3">
             <div className="flex flex-col bg-[#EBE8FF] rounded-sm overflow-hidden py-2 px-3">
-              {/* Category Select */}
               <div className="flex-1 border-b-2 border-gray-300 py-1">
                 <Select
                   value={selectedCategory}
-                  onValueChange={(value) => setSelectedCategory(value)}
+                  onValueChange={(value) => {
+                    console.log("Category changed to:", value);
+                    setSelectedCategory(value);
+                    setCurrentPage(1);
+                    updateURL(value, 1);
+                  }}
                 >
                   <SelectTrigger className="w-full px-5 py-4 bg-transparent border-none rounded-none text-gray-800 font-medium shadow-none hover:bg-purple-150 focus:ring-0 focus:border-none cursor-pointer">
                     <SelectValue placeholder="Category" />
@@ -267,13 +317,9 @@ export default function HomePage() {
                   </SelectContent>
                 </Select>
               </div>
-
-              {/* Location Select */}
               <div className="flex-1 min-w-0 border-b-2 border-gray-300 py-1">
                 <LocationSelect />
               </div>
-
-              {/* Course Select */}
               <div className="flex-1 py-1">
                 <Select disabled>
                   <SelectTrigger className="w-full px-5 py-4 bg-transparent border-none rounded-none text-gray-800 font-medium shadow-none hover:bg-purple-150 focus:ring-0 focus:border-none cursor-pointer">
@@ -292,7 +338,6 @@ export default function HomePage() {
                 </Select>
               </div>
             </div>
-
             <div className="w-full mt-2">
               <Button className="w-full bg-allpurple hover:bg-indigo-700 text-white rounded-sm transition-colors duration-200 shadow-none border-0 cursor-pointer">
                 Search
@@ -301,13 +346,17 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Card Section */}
         <div className="w-[80vw] sm:w-[70vw] md:w-[80vw] lg:w-[80vw] flex flex-col justify-center items-center pt-10">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 items-center w-full gap-4">
-            {loading ? (
+          <div
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 items-center w-full gap-4"
+            ref={cardGridRef}
+          >
+            {isLoading ? (
               <div className="text-center text-allcharcoal">Loading...</div>
-            ) : error ? (
-              <div className="text-center text-red-500">{error}</div>
+            ) : isError ? (
+              <div className="text-center text-red-500">
+                {getErrorMessage()}
+              </div>
             ) : cardData.length === 0 ? (
               <div className="text-center text-gray-500">
                 No data available for this category.
@@ -317,8 +366,8 @@ export default function HomePage() {
             )}
           </div>
           {totalCards > cardsPerPage &&
-            !loading &&
-            !error &&
+            !isLoading &&
+            !isError &&
             cardData.length > 0 && (
               <div className="flex justify-center mt-4">
                 <Pagination>

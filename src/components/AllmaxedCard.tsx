@@ -4,12 +4,12 @@ import React from "react";
 import { MapPin, Users } from "lucide-react";
 import { Button } from "./ui/button";
 import { MoveRight } from "lucide-react";
-import { usePathname } from "next/navigation";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import axios, { AxiosError } from "axios";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { useAuthStore } from "@/context/authStore";
-import Link from "next/link";
 
 import {
   AlertDialog,
@@ -26,12 +26,22 @@ import {
 interface AllmaxedProps {
   programId?: string;
   title?: string;
-  appliedCount?: number;
+  appliedCount?: string;
   location?: string;
   date?: string;
   module?: string;
   level_required?: string;
 }
+
+// api fn
+const withdrawApplication = async (allmaxedId: string, userToken: string) => {
+  const response = await axios.post(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/withdraw_long_term_application`,
+    { program_id: parseInt(allmaxedId, 10) },
+    { headers: { Authorization: `Bearer ${userToken}` } }
+  );
+  return response.data;
+};
 
 const AllmaxedCard: React.FC<AllmaxedProps> = ({
   programId,
@@ -42,28 +52,26 @@ const AllmaxedCard: React.FC<AllmaxedProps> = ({
   module,
   level_required,
 }) => {
+  const queryClient = useQueryClient();
   const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { userToken } = useAuthStore();
+  const [isWithdrawingLocal, setIsWithdrawingLocal] = useState(false);
 
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleWithdrawal = async () => {
-    if (!programId || isNaN(parseInt(programId, 10))) {
-      toast.error("Invalid program ID.");
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/withdraw_long_term_application`,
-        { program_id: parseInt(programId, 10) },
-        { headers: { Authorization: `Bearer ${userToken}` } }
-      );
-      if (response.status === 200) {
-        toast.success("Application withdrawn successfully!");
-      }
-    } catch (error: unknown) {
+  const withdrawMutation = useMutation({
+    mutationFn: () => withdrawApplication(programId!, userToken!),
+    onMutate: () => {
+      setIsWithdrawingLocal(true);
+    },
+    onSettled: () => {
+      setTimeout(() => setIsWithdrawingLocal(false), 1500);
+    },
+    onSuccess: () => {
+      toast.success("Application withdrawn successfully!");
+      queryClient.invalidateQueries({ queryKey: ["program", programId] });
+    },
+    onError: (error: unknown) => {
       if (error instanceof AxiosError) {
         if (error.response?.status === 400) {
           toast.error("No application found for this program");
@@ -73,18 +81,56 @@ const AllmaxedCard: React.FC<AllmaxedProps> = ({
       } else {
         toast.error("An unexpected error occurred");
       }
-    } finally {
-      setIsLoading(false);
+    },
+  });
+
+  const handleWithdrawal = async () => {
+    if (!userToken) {
+      toast.error("Please log in to withdraw.");
+      return;
     }
+
+    if (!programId || isNaN(parseInt(programId, 10))) {
+      toast.error("Invalid program ID.");
+      return;
+    }
+
+    withdrawMutation.mutate();
+  };
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Prevent navigation if clicking on a button or within an alert dialog
+    if (
+      (e.target as HTMLElement).closest("button") ||
+      (e.target as HTMLElement).closest('[role="dialog"]')
+    ) {
+      return;
+    }
+
+    // Get current page state from URL or defaults
+    const currentCategory = searchParams.get("category") || "allmaxed";
+    const currentPage = searchParams.get("page") || "1";
+
+    // Construct return parameters for state preservation
+    const returnParams = new URLSearchParams();
+    returnParams.set("category", currentCategory);
+    returnParams.set("page", currentPage);
+    returnParams.set("cardId", programId || "");
+
+    // Navigate to program details with return state
+    router.push(
+      `/home/programs/${programId}?returnTo=${encodeURIComponent(
+        `/home?${returnParams.toString()}`
+      )}`
+    );
   };
 
   return (
-    <div className="flex flex-col justify-center bg-white rounded-xl border border-gray-200 hover:shadow-lg transition-shadow duration-300 cursor-pointer w-full h-full">
-      <Link
-        href={`home/programs/${programId}`}
-        key={programId}
-        className="h-full pt-8 px-8 pb-3"
-      >
+    <div
+      className="flex flex-col justify-center bg-white rounded-xl border border-gray-200 hover:shadow-lg transition-shadow duration-300 cursor-pointer w-full h-full"
+      onClick={handleCardClick}
+    >
+      <div className="h-full pt-8 px-8 pb-3">
         <div className="flex flex-col h-full w-full justify-between">
           {/* Top section - Card Header and Location */}
           <div className="flex flex-col">
@@ -102,7 +148,7 @@ const AllmaxedCard: React.FC<AllmaxedProps> = ({
             </div>
           </div>
 
-          {/* Bottom section - Date, Tags, and Footer (fixed positioning) */}
+          {/* Bottom section - Date, Tags, and Footer */}
           <div className="flex flex-col mt-auto">
             {/* Date */}
             <div className="flex items-center justify-between mb-4">
@@ -119,7 +165,7 @@ const AllmaxedCard: React.FC<AllmaxedProps> = ({
               </span>
             </div>
 
-            {/* footer - users applied section */}
+            {/* Footer - users applied section */}
             <div className="flex justify-end">
               <div className="flex items-center text-xs text-gray-400">
                 <Users className="w-3 h-3 mr-1" />
@@ -128,28 +174,29 @@ const AllmaxedCard: React.FC<AllmaxedProps> = ({
             </div>
           </div>
         </div>
-      </Link>
-      {/* Applied Page Section */}
+      </div>
+      {/* Applied Section */}
       <div
         className={`${
           pathname === "/applied"
             ? "w-full flex justify-center items-center border-t border-gray-600 py-5 mt-auto"
             : "hidden"
         }`}
+        onClick={(e) => e.stopPropagation()}
       >
         <AlertDialog>
           <AlertDialogTrigger asChild className="w-full">
             <Button
               className="w-fit bg-allpurple hover:bg-indigo-700 text-white rounded-full transition-colors duration-200 shadow-none border-0 cursor-pointer px-8"
-              onClick={handleWithdrawal}
+              // disabled={isWithdrawingLocal}
               disabled
             >
-              {!isLoading ? (
+              {isWithdrawingLocal ? (
+                "Withdrawing..."
+              ) : (
                 <span className="flex justify-center items-center gap-2">
                   Withdraw Application <MoveRight />
                 </span>
-              ) : (
-                "Withdrawing..."
               )}
             </Button>
           </AlertDialogTrigger>
@@ -168,7 +215,7 @@ const AllmaxedCard: React.FC<AllmaxedProps> = ({
                 Cancel
               </AlertDialogCancel>
               <AlertDialogAction
-                className="cursor-pointer text-white bg-red-500  hover:bg-red-600"
+                className="cursor-pointer text-white bg-red-500 hover:bg-red-600"
                 onClick={handleWithdrawal}
               >
                 Withdraw

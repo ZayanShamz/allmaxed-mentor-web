@@ -1,419 +1,378 @@
 "use client";
 
-import Footer from "@/components/Footer";
-import Navbar from "@/components/Navbar";
-import { useAuthStore } from "@/context/authStore";
-import Link from "next/link";
-import { SlashIcon } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
-import toast from "react-hot-toast";
-import { useRouter } from "next/navigation";
-import * as Tooltip from "@radix-ui/react-tooltip";
-import { X, MoveLeft } from "lucide-react";
+import { useAuthStore } from "@/context/authStore";
 
-interface UpdateMentorPayload {
-  portfolio_link?: string | null;
-  social_media_link?: string | null;
-  // Add other fields that your API expects
-  age?: number;
-  gender?: string;
-  aadhaar_no?: string;
-  phone?: string;
-  address?: string;
-  city?: string;
-  district?: string;
-  state?: string;
-  field?: string;
-  current_occupation?: string;
-  designation?: string;
-  experience?: string;
-  workplace?: string;
-  duration?: string;
+import AllmaxedCard from "@/components/AllmaxedCard";
+import SkillstormCard from "@/components/SkillstormCard";
+import LocationSelect from "@/components/LocationSelect";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationPrevious,
+  PaginationNext,
+  PaginationLink,
+} from "@/components/ui/pagination";
+
+interface AllmaxedCardData {
+  id: string;
+  title: string;
+  appliedCount: number;
+  location: string;
+  date: string;
+  module: string;
+  level_required: string;
 }
 
-export default function EditProfile() {
-  const mentorData = useAuthStore((state) => state.mentorData);
-  const userData = useAuthStore((state) => state.userData);
-  const userToken = useAuthStore((state) => state.userToken);
-  const setMentorData = useAuthStore((state) => state.setMentorData);
-  const mentorId = mentorData?.id;
-  const router = useRouter();
-  const queryClient = useQueryClient();
+interface SkillstormCardData {
+  id: string;
+  topic: string;
+  appliedCount: number;
+  location: string;
+  date: string;
+  level_required: string;
+  duration: string;
+  pay: string;
+}
 
-  const [portfolioLink, setPortfolioLink] = useState(
-    mentorData?.portfolio_link || ""
-  );
-  const [socialMediaLink, setSocialMediaLink] = useState(
-    mentorData?.social_media_link || ""
-  );
-  const [errors, setErrors] = useState({ portfolio: "", social: "" });
-  const [submitted, setSubmitted] = useState(false);
-  const [focusedField, setFocusedField] = useState<string | null>(null);
+export default function HomePage() {
+  const { userToken } = useAuthStore();
+  // console.log("User Token:", userToken);
 
-  // validate url input (api needs proper url)
-  const isValidUrl = (url: string): boolean => {
-    if (!url.trim()) return true; // Empty is valid (optional field)
+  const [currentPage, setCurrentPage] = useState(1);
+  const [cardData, setCardData] = useState<
+    AllmaxedCardData[] | SkillstormCardData[]
+  >([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [cardsPerPage, setCardsPerPage] = useState(9);
+  const [selectedCategory, setSelectedCategory] = useState("allmaxed");
 
-    try {
-      const urlObj = new URL(url);
-      return urlObj.protocol === "http:" || urlObj.protocol === "https:";
-    } catch {
-      return false;
-    }
-  };
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedCategory]);
 
-  const handlePortfolioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setPortfolioLink(value);
-    if (errors.portfolio) {
-      setErrors((prev) => ({ ...prev, portfolio: "" }));
-    }
-  };
-
-  const handleSocialChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setSocialMediaLink(value);
-    if (errors.social) {
-      setErrors((prev) => ({ ...prev, social: "" }));
-    }
-  };
-
-  const handlePortfolioBlur = () => {
-    if (portfolioLink && !isValidUrl(portfolioLink)) {
-      setErrors((prev) => ({
-        ...prev,
-        portfolio: "Please enter a valid URL starting with http:// or https://",
-      }));
-    } else {
-      setErrors((prev) => ({ ...prev, portfolio: "" }));
-    }
-  };
-
-  const handleSocialBlur = () => {
-    if (socialMediaLink && !isValidUrl(socialMediaLink)) {
-      setErrors((prev) => ({
-        ...prev,
-        social: "Please enter a valid URL starting with http:// or https://",
-      }));
-    } else {
-      setErrors((prev) => ({ ...prev, social: "" }));
-    }
-  };
-
-  const handleClearPortfolio = () => {
-    setPortfolioLink("");
-    setErrors((prev) => ({ ...prev, portfolio: "" }));
-  };
-
-  const handleClearSocialMedia = () => {
-    setSocialMediaLink("");
-    setErrors((prev) => ({ ...prev, social: "" }));
-  };
-
-  // Mutation for updating mentor data
-  const updateMentorMutation = useMutation({
-    mutationFn: async (payload: UpdateMentorPayload) => {
-      if (!mentorId || !userToken) {
-        throw new Error("Missing mentor ID or token");
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!userToken) {
+        console.warn("No user token available, skipping API call");
+        return;
       }
 
-      const response = await axios.patch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/mentors/${mentorId}`,
-        payload,
-        {
-          headers: {
-            Authorization: `Bearer ${userToken}`,
-            "Content-Type": "application/json",
-          },
+      setLoading(true);
+      setError(null);
+      try {
+        const endpoint =
+          selectedCategory === "allmaxed"
+            ? `${process.env.NEXT_PUBLIC_API_URL}/api/long_term_programs`
+            : `${process.env.NEXT_PUBLIC_API_URL}/api/short_term_programs`;
+
+        const response = await axios.get(endpoint, {
+          headers: { Authorization: `Bearer ${userToken}` },
+        });
+        console.log("API Response:", response.data);
+
+        setCardData(response.data);
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          console.error("Error fetching data:", error.message);
+          setError(error.message);
+        } else {
+          console.error("Unexpected error:", error);
+          setError("An unexpected error occurred");
         }
-      );
-      return response.data;
-    },
-    onSuccess: (data) => {
-      toast.success("Profile updated successfully!");
-
-      // Update the mentor data in authStore
-      if (data.mentor) {
-        setMentorData(data.mentor);
+      } finally {
+        setLoading(false);
       }
+    };
+    fetchData();
+  }, [userToken, selectedCategory]);
 
-      // Invalidate and refetch any queries that depend on mentor data
-      queryClient.invalidateQueries({ queryKey: ["mentor", mentorId] });
-      router.push("/profile");
-    },
-    onError: (error) => {
-      console.error("Update failed:", error);
-      if (axios.isAxiosError(error)) {
-        const errorMessage =
-          error.response?.data?.message || "Failed to update profile";
-
-        if (error.response?.status === 500) {
-          const validationErrors = error.response?.data?.message;
-          if (validationErrors) {
-            if (validationErrors.portfolio_link) {
-              setErrors((prev) => ({
-                ...prev,
-                portfolio: validationErrors.portfolio_link[0],
-              }));
-            }
-            if (validationErrors.social_media_link) {
-              setErrors((prev) => ({
-                ...prev,
-                social: validationErrors.social_media_link[0],
-              }));
-            }
-            toast.error("Please fix the validation errors");
-            return;
-          }
-        }
-
-        toast.error(errorMessage);
-      } else {
-        toast.error("Failed to update profile. Please try again.");
-      }
-    },
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitted(true);
-
-    if (!mentorId) {
-      toast.error("Mentor ID not found");
-      return;
-    }
-
-    const originalPortfolio = mentorData?.portfolio_link || "";
-    const originalSocial = mentorData?.social_media_link || "";
-
-    const hasPortfolioChanged = portfolioLink.trim() !== originalPortfolio;
-    const hasSocialChanged = socialMediaLink.trim() !== originalSocial;
-
-    if (!hasPortfolioChanged && !hasSocialChanged) {
-      toast.error("No changes detected");
-      return;
-    }
-
-    const apiPayload: UpdateMentorPayload = {
-      age: mentorData?.age,
-      gender: mentorData?.gender,
-      aadhaar_no: mentorData?.aadhaar_no,
-      phone: userData?.phone,
-      address: mentorData?.address,
-      city: mentorData?.city,
-      district: mentorData?.district,
-      state: mentorData?.state,
-      field: mentorData?.field,
-      current_occupation: mentorData?.current_occupation,
-      designation: mentorData?.designation,
-      experience: mentorData?.experience,
-      workplace: mentorData?.workplace,
-      duration: mentorData?.duration,
+  // Change cardsPerPage 9 - 8 based on screen size
+  useEffect(() => {
+    const handleResize = () => {
+      setCardsPerPage(window.innerWidth < 1024 ? 8 : 9);
     };
 
-    if (hasPortfolioChanged) {
-      apiPayload.portfolio_link =
-        portfolioLink.trim() === "" ? null : portfolioLink.trim();
-    } else {
-      apiPayload.portfolio_link = mentorData?.portfolio_link;
-    }
+    handleResize();
 
-    if (hasSocialChanged) {
-      apiPayload.social_media_link =
-        socialMediaLink.trim() === "" ? null : socialMediaLink.trim();
-    } else {
-      apiPayload.social_media_link = mentorData?.social_media_link;
-    }
+    window.addEventListener("resize", handleResize);
 
-    updateMentorMutation.mutate(apiPayload);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const totalCards = cardData.length;
+  const totalPages = Math.ceil(totalCards / cardsPerPage);
+  const startIndex = (currentPage - 1) * cardsPerPage;
+  const endIndex = startIndex + cardsPerPage;
+
+  const displayedCards = cardData
+    .slice(startIndex, endIndex)
+    .map((card, index) => {
+      if (selectedCategory === "allmaxed") {
+        const allmaxedCard = card as AllmaxedCardData;
+        // console.log("allmaxedCard :", allmaxedCard.id);
+        return (
+          <AllmaxedCard
+            programId={allmaxedCard.id}
+            key={startIndex + index}
+            title={allmaxedCard.title}
+            appliedCount={startIndex + index || 0}
+            location={allmaxedCard.location}
+            date={new Date(allmaxedCard.date).toLocaleDateString("en-US", {
+              day: "2-digit",
+              month: "short",
+            })}
+            module={allmaxedCard.module}
+            level_required={
+              allmaxedCard.level_required.charAt(0).toUpperCase() +
+              allmaxedCard.level_required.slice(1)
+            }
+          />
+        );
+      } else {
+        const skillstormCard = card as SkillstormCardData;
+        return (
+          <SkillstormCard
+            workshopId={skillstormCard.id}
+            key={startIndex + index}
+            topic={skillstormCard.topic}
+            appliedCount={startIndex + index || 0}
+            location={skillstormCard.location}
+            date={new Date(skillstormCard.date).toLocaleDateString("en-US", {
+              day: "2-digit",
+              month: "short",
+            })}
+            level_required={
+              skillstormCard.level_required.charAt(0).toUpperCase() +
+              skillstormCard.level_required.slice(1)
+            }
+            duration={skillstormCard.duration}
+            pay={skillstormCard.pay}
+          />
+        );
+      }
+    });
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
-
-  const isLoading = updateMentorMutation.isPending;
 
   return (
     <>
       <div
-        className="h-[25vh] md:h-[30vh] w-full"
+        className="min-h-screen w-full relative"
         style={{
           backgroundImage: `
-                          linear-gradient(to bottom, rgba(255, 255, 255, 0.2), rgba(0, 0, 0)),
-                          url('/images/bg.jpg')
-                        `,
+            linear-gradient(to bottom, rgba(150, 150, 150, 0.2), rgba(0, 0, 0)),
+            url('/images/bg.jpg')
+          `,
           backgroundSize: "cover",
           backgroundPosition: "top",
           backgroundRepeat: "no-repeat",
         }}
       >
-        <div className="max-w-screen-2xl flex items-center justify-start mx-auto h-full px-5">
-          <div className="h-fit w-full flex items-center">
-            <Link
-              href="/home"
-              className="text-h3 font-normal pe-1 text-gray-300 hover:text-gray-200 hover:underline underline-offset-4 transition"
-            >
-              Allmax&apos;d
-            </Link>
-            <SlashIcon className="w-5 h-5 text-gray-300 -rotate-20" />
-            <Link
-              href="/profile"
-              className="text-h3 font-normal pe-1 text-gray-300 hover:text-gray-200 hover:underline underline-offset-4 transition"
-            >
-              Profile
-            </Link>
-            <SlashIcon className="w-5 h-5 text-gray-300 -rotate-20" />
-            <div className="text-h3 font-normal text-allsnowflake cursor-default">
-              Edit Profile
-            </div>
+        <Navbar />
+        <div className="responsive-one flex flex-col items-center justify-center mx-auto h-dvh text-center">
+          <h1 className="text-6xl md:text-7xl text-white font-bold leading-tight">
+            Let’s Share Your Skills!
+          </h1>
+          <div className="flex justify-center items-center py-4">
+            <p className="title-subtext text-white text-center  max-w-2xl leading-tight">
+              Find opportunities that suit you the best and apply for them.
+              Share your knowledge with the youth and let them to succeed...
+            </p>
           </div>
         </div>
       </div>
-      <Navbar />
-      <Tooltip.Provider>
-        <div className="w-full flex flex-col justify-center items-center">
-          <form
-            onSubmit={handleSubmit}
-            className="flex justify-center w-[90vw] my-5"
-          >
-            <div className="bg-white overflow-hidden shadow rounded-lg border w-full sm:w-[80%] md:w-[70%] lg:w-[45%] my-10">
-              <div className="px-6 py-5">
-                <div className="text-h3 leading-6 font-medium text-allcharcoal">
-                  Edit Personal Information
-                </div>
+
+      <section className="w-full min-h-screen bg-allsnowflake flex flex-col items-center justify-start py-20">
+        <div className="w-[90vw] sm:w-[70vw] md:w-[80vw] lg:w-[70vw] bg-white border rounded-md p-5">
+          {/* Desktop Layout - Joined Selects (sm and larger) */}
+          <div className="hidden md:flex gap-4 items-center">
+            {/* Joined Select Container */}
+            <div className="flex flex-1 bg-[#EBE8FF] rounded-sm overflow-hidden min-w-0 py-2 items-center">
+              <div className="flex-1 min-w-0 border-r-2 border-gray-300">
+                <Select
+                  value={selectedCategory}
+                  onValueChange={(value) => setSelectedCategory(value)}
+                >
+                  <SelectTrigger className="w-full px-5 py-3 bg-transparent border-none rounded-none text-allcharcoal text-md shadow-none hover:bg-purple-150 focus:ring-0 focus:border-none cursor-pointer">
+                    <SelectValue placeholder="Select Category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="allmaxed">Allmax&apos;d</SelectItem>
+                    <SelectItem value="skillstorm">Skillstorm</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-              <div className="border-t border-gray-200 px-5">
-                <dl className="divide-y divide-gray-200">
-                  <div className="py-5 grid grid-cols-3 items-center gap-4 px-3">
-                    <dt className="text-body-small font-medium text-gray-500">
-                      Portfolio
-                    </dt>
-                    <dd className="text-gray-900 col-span-2 relative">
-                      <Tooltip.Root
-                        open={
-                          submitted &&
-                          !!errors.portfolio &&
-                          focusedField === "portfolio"
-                        }
-                      >
-                        <Tooltip.Trigger asChild>
-                          <Input
-                            type="url"
-                            name="portfolio"
-                            className="pr-10"
-                            placeholder="Portfolio Link (optional)"
-                            value={portfolioLink}
-                            onChange={handlePortfolioChange}
-                            onBlur={() => {
-                              handlePortfolioBlur();
-                              setFocusedField(null);
-                            }}
-                            onFocus={() => setFocusedField("portfolio")}
-                            disabled={isLoading}
-                          />
-                        </Tooltip.Trigger>
-                        <Tooltip.Portal>
-                          <Tooltip.Content
-                            side="bottom"
-                            align="center"
-                            className="bg-red-500 text-white px-3 rounded-lg shadow-lg z-50"
-                            sideOffset={5}
-                          >
-                            {errors.portfolio}
-                            <Tooltip.Arrow className="fill-red-500" />
-                          </Tooltip.Content>
-                        </Tooltip.Portal>
-                      </Tooltip.Root>
-                      {portfolioLink && (
-                        <span
-                          className="absolute right-1 p-3 rounded-2xl top-1/2 transform -translate-y-1/2 cursor-pointer text-allcharcoal hover:bg-gray-100"
-                          onClick={handleClearPortfolio}
-                          aria-hidden="true"
-                        >
-                          <X className="w-4 h-4 text-gray-500 hover:text-gray-700" />
-                        </span>
-                      )}
-                    </dd>
-                  </div>
-                  <div className="py-5 grid grid-cols-3 items-center gap-4 px-3">
-                    <dt className="text-body-small font-medium text-gray-500">
-                      Social Media
-                    </dt>
-                    <dd className="text-gray-900 col-span-2 relative">
-                      <Tooltip.Root
-                        open={
-                          submitted &&
-                          !!errors.social &&
-                          focusedField === "social"
-                        }
-                      >
-                        <Tooltip.Trigger asChild>
-                          <Input
-                            type="url"
-                            name="social"
-                            className="pr-10"
-                            placeholder="Social Media Link (optional)"
-                            value={socialMediaLink}
-                            onChange={handleSocialChange}
-                            onBlur={() => {
-                              handleSocialBlur();
-                              setFocusedField(null);
-                            }}
-                            onFocus={() => setFocusedField("social")}
-                            disabled={isLoading}
-                          />
-                        </Tooltip.Trigger>
-                        <Tooltip.Portal>
-                          <Tooltip.Content
-                            side="bottom"
-                            align="center"
-                            className="bg-red-500 text-white px-3 rounded-lg shadow-lg z-50"
-                            sideOffset={5}
-                          >
-                            {errors.social}
-                            <Tooltip.Arrow className="fill-red-500" />
-                          </Tooltip.Content>
-                        </Tooltip.Portal>
-                      </Tooltip.Root>
-                      {socialMediaLink && (
-                        <span
-                          className="absolute right-1 p-3 rounded-2xl top-1/2 transform -translate-y-1/2 cursor-pointer text-allcharcoal hover:bg-gray-100"
-                          onClick={handleClearSocialMedia}
-                          aria-hidden="true"
-                        >
-                          <X className="w-4 h-4 text-gray-500 hover:text-gray-700" />
-                        </span>
-                      )}
-                    </dd>
-                  </div>
-                  <div className="py-10 px-3 flex items-center justify-between md:justify-center gap-4">
-                    <Button
-                      onClick={() => router.push("/profile")}
-                      disabled={isLoading}
-                      className="py-5 border-2 border-allcharcoal text-allcharcoal bg-transparent hover:bg-allcharcoal hover:text-allsnowflake cursor-pointer"
-                    >
-                      <span className="flex justify-center items-center px-3 gap-3 text-lg">
-                        <MoveLeft /> Cancel
-                      </span>
-                    </Button>
-                    <Button
-                      type="submit"
-                      onClick={handleSubmit}
-                      disabled={isLoading}
-                      className="py-5 bg-allpurple text-allsnowflake text-lg border-2 border-allpurple cursor-pointer hover:bg-indigo-700 disabled:opacity-50 disabled:bg-gray-500"
-                    >
-                      <span className="flex justify-center items-center px-3 text-lg">
-                        {isLoading ? "Updating..." : "Submit Changes"}
-                      </span>
-                    </Button>
-                  </div>
-                </dl>
+
+              <div className="flex-1 min-w-0 border-r-2 border-gray-300">
+                <LocationSelect />
+              </div>
+
+              <div className="flex-1 min-w-0">
+                <Select disabled>
+                  <SelectTrigger className="w-full px-5 py-3 bg-transparent border-none rounded-none text-allcharcoal text-md shadow-none hover:bg-purple-150 focus:ring-0 focus:border-none cursor-pointer">
+                    <SelectValue placeholder="Select Course" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="beginner">Beginner Level</SelectItem>
+                    <SelectItem value="intermediate">
+                      Intermediate Level
+                    </SelectItem>
+                    <SelectItem value="advanced">Advanced Level</SelectItem>
+                    <SelectItem value="certification">Certification</SelectItem>
+                    <SelectItem value="workshop">Workshop</SelectItem>
+                    <SelectItem value="bootcamp">Bootcamp</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
-          </form>
+
+            <div className="flex-shrink-0">
+              <Button className="py-6 px-8 bg-allpurple hover:bg-indigo-700 text-white rounded-sm transition-colors duration-200 shadow-none border-0 cursor-pointer">
+                Search
+              </Button>
+            </div>
+          </div>
+
+          {/* Mobile Layout - Stacked Selects (smaller than sm) */}
+          <div className="flex md:hidden flex-col gap-3">
+            <div className="flex flex-col bg-[#EBE8FF] rounded-sm overflow-hidden py-2 px-3">
+              {/* Category Select */}
+              <div className="flex-1 border-b-2 border-gray-300 py-1">
+                <Select
+                  value={selectedCategory}
+                  onValueChange={(value) => setSelectedCategory(value)}
+                >
+                  <SelectTrigger className="w-full px-5 py-4 bg-transparent border-none rounded-none text-gray-800 font-medium shadow-none hover:bg-purple-150 focus:ring-0 focus:border-none cursor-pointer">
+                    <SelectValue placeholder="Category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="allmaxed">Allmax&apos;d</SelectItem>
+                    <SelectItem value="skillstorm">Skillstorm</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Location Select */}
+              <div className="flex-1 min-w-0 border-b-2 border-gray-300 py-1">
+                <LocationSelect />
+              </div>
+
+              {/* Course Select */}
+              <div className="flex-1 py-1">
+                <Select disabled>
+                  <SelectTrigger className="w-full px-5 py-4 bg-transparent border-none rounded-none text-gray-800 font-medium shadow-none hover:bg-purple-150 focus:ring-0 focus:border-none cursor-pointer">
+                    <SelectValue placeholder="Course" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="beginner">Beginner Level</SelectItem>
+                    <SelectItem value="intermediate">
+                      Intermediate Level
+                    </SelectItem>
+                    <SelectItem value="advanced">Advanced Level</SelectItem>
+                    <SelectItem value="certification">Certification</SelectItem>
+                    <SelectItem value="workshop">Workshop</SelectItem>
+                    <SelectItem value="bootcamp">Bootcamp</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="w-full mt-2">
+              <Button className="w-full bg-allpurple hover:bg-indigo-700 text-white rounded-sm transition-colors duration-200 shadow-none border-0 cursor-pointer">
+                Search
+              </Button>
+            </div>
+          </div>
         </div>
-      </Tooltip.Provider>
+
+        {/* Card Section */}
+        <div className="w-[80vw] sm:w-[70vw] md:w-[80vw] lg:w-[80vw] flex flex-col justify-center items-center pt-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 items-center w-full gap-4">
+            {loading ? (
+              <div className="text-center text-allcharcoal">Loading...</div>
+            ) : error ? (
+              <div className="text-center text-red-500">{error}</div>
+            ) : cardData.length === 0 ? (
+              <div className="text-center text-gray-500">
+                No data available for this category.
+              </div>
+            ) : (
+              displayedCards
+            )}
+          </div>
+          {totalCards > cardsPerPage &&
+            !loading &&
+            !error &&
+            cardData.length > 0 && (
+              <div className="flex justify-center mt-4">
+                <Pagination>
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious
+                        onClick={() =>
+                          handlePageChange(
+                            currentPage > 1 ? currentPage - 1 : 1
+                          )
+                        }
+                        className={
+                          currentPage === 1
+                            ? "pointer-events-none opacity-50"
+                            : "cursor-pointer"
+                        }
+                      />
+                    </PaginationItem>
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                      (page) => (
+                        <PaginationItem key={page}>
+                          <PaginationLink
+                            className="cursor-pointer"
+                            onClick={() => handlePageChange(page)}
+                            isActive={currentPage === page}
+                          >
+                            {page}
+                          </PaginationLink>
+                        </PaginationItem>
+                      )
+                    )}
+                    <PaginationItem>
+                      <PaginationNext
+                        onClick={() =>
+                          handlePageChange(
+                            currentPage < totalPages
+                              ? currentPage + 1
+                              : totalPages
+                          )
+                        }
+                        className={
+                          currentPage === totalPages
+                            ? "pointer-events-none opacity-50"
+                            : "cursor-pointer"
+                        }
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+              </div>
+            )}
+        </div>
+      </section>
+
       <Footer />
     </>
   );
