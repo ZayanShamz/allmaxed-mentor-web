@@ -255,7 +255,7 @@ export default function WorkshopDetailsPage() {
       >
         <Navbar />
         <div className="max-w-screen-2xl flex items-center justify-start mx-auto h-full px-5">
-          <div className="h-fit w-full flex items-center">
+          <div className="h-fit w-full flex items-center flex-wrap">
             <button
               onClick={handleBackNavigation}
               className="text-h3 font-normal pe-1 text-gray-400 cursor-pointer hover:text-gray-200 hover:underline underline-offset-4 transition"
