@@ -84,6 +84,7 @@ export default function WorkshopDetailsPage() {
   const [isWithdrawingLocal, setIsWithdrawingLocal] = useState(false);
 
   const handleBackNavigation = () => {
+    console.log("Navigating back to:", returnTo);
     if (returnTo) {
       // Decode and navigate to the return URL with preserved state
       router.push(decodeURIComponent(returnTo));

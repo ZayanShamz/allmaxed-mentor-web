@@ -1,72 +1,69 @@
-# Last Commit: State Preserving Navigation & React Query Integration
+# Last Commit: Enhanced Pagination & Navigation State Management
 
 ## Overview
 
-This commit introduces state preserving navigation to the home page and implements React Query for improved data management across the application.
+This commit introduces comprehensive pagination improvements and enhanced navigation state management for the home page, including browser refresh handling and card highlighting functionality.
 
 ## Key Changes
 
-### 🏠 State Preserving Navigation
+### 🔢 Advanced Pagination System
 
-- **Home Page Enhancement**: Added state preserving navigation logic to maintain user context when navigating to the home page
-- **URL State Management**: Implemented proper URL state handling to preserve search parameters and filters
-- **Navigation Flow**: Improved user experience by maintaining application state during navigation
+- **Dynamic Cards Per Page**: Implemented responsive pagination that adjusts based on screen size (8 cards on mobile, 9 on desktop)
+- **URL State Synchronization**: Pagination state is now properly synchronized with URL parameters
+- **Navigation API Integration**: Added support for modern Navigation API with fallback for older browsers
 
-### 🃏 Card Components Refactoring
+### 🏠 Enhanced Home Page Navigation
 
-- **SkillstormCard.tsx**:
+- **State Preservation**: Improved state preserving navigation with proper URL parameter handling
+- **Card Highlighting**: Added visual feedback when returning from workshop details with highlighted cards
+- **Scroll Restoration**: Automatic scrolling to last viewed card with smooth animation
+- **Category Management**: Better category switching with proper state management
 
-  - Integrated React Query mutations for withdrawal functionality
-  - Added proper error handling with toast notifications
-  - Implemented loading states for withdrawal operations
-  - Enhanced user authentication checks before API calls
+### 🎯 Card Interaction Improvements
 
-- **AllmaxedCard.tsx**:
-  - Refactored API calls to use React Query mutations
-  - Added withdrawal confirmation dialogs
-  - Improved error handling and user feedback
-  - Implemented proper loading states
+- **Click Handling**: Enhanced card click detection to prevent navigation when clicking buttons or dialogs
+- **Return State**: Cards now preserve return state for seamless navigation back to home page
+- **Visual Feedback**: Added temporary highlight effect for cards when returning from details
 
-### 📚 Pages Updates
+### 🔄 Query Optimization
 
-- **Workshops Page & Programs Page**
-- Updated to work with new state preserving navigation
-- Enhanced with improved data fetching and state management
-
-### 🔄 API Integration
-
-- **React Query Implementation**: Replaced direct API calls with React Query mutations
-- **Mutation Functions**: Created dedicated mutation functions for withdrawal operations
-- **Error Handling**: Enhanced error handling with proper user feedback
-- **Loading States**: Added loading indicators for better UX
+- **React Query Integration**: Improved data fetching with proper caching and error handling
+- **Stale Time Management**: Added 5-minute stale time for better performance
+- **Retry Logic**: Implemented retry mechanism for failed API calls
+- **Loading States**: Enhanced loading indicators and error states
 
 ## Technical Details
 
 ### New Features
 
-- State preserving navigation system
-- React Query mutation integration
-- Enhanced error handling with toast notifications
-- Loading state management
-- Improved authentication flow
+- Responsive pagination system
+- Navigation API integration with fallback
+- Browser refresh detection and handling (in progress)
+- Card highlighting and scroll restoration
+- Enhanced URL state management
+- Improved error handling and loading states
 
-### Dependencies
+### Failed
 
-- @tanstack/react-query
-- react-hot-toast
-- axios
+- **Browser Refresh Handling**: Properly handles browser refresh events to reset to default state
+
+### Browser Compatibility
+
+- **Modern Browsers**: Uses Navigation API for enhanced experience
+- **Legacy Support**: Fallback mechanisms for older browsers
 
 ### Files Modified
 
-- `src/components/SkillstormCard.tsx`
-- `src/components/AllmaxedCard.tsx`
-- Workshops and Programs pages
-- Navigation logic components
+- `src/app/home/page.tsx` - Main pagination and navigation logic
+- `src/components/SkillstormCard.tsx` - Enhanced click handling
+- `src/components/ui/pagination.tsx` - Pagination component improvements
+- `src/components/ui/button.tsx` - Button variant additions
 
 ## Benefits
 
-- ✅ Improved user experience with state preservation
-- ✅ Better data management with React Query
-- ✅ Enhanced error handling and user feedback
-- ✅ More reliable API interactions
-- ✅ Consistent loading states across components
+- ✅ Responsive pagination that adapts to screen size
+- ✅ Seamless navigation with state preservation
+- ✅ Enhanced user experience with card highlighting
+- ✅ Proper browser refresh handling
+- ✅ Improved performance with React Query optimization
+- ✅ Better accessibility and visual feedback

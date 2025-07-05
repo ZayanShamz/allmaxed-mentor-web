@@ -200,15 +200,19 @@ export default function ProgramInterfacePage() {
   };
 
   if (isLoading) {
-    <>
-      <div className="h-[25vh] md:h-[30vh] lg:h-[40vh] w-full">
-        <Navbar />
-      </div>
-      <section className="w-full bg-allsnowflake flex items-center justify-center py-20">
-        <div className="text-h3 text-allpurple">Loading program details...</div>
-      </section>
-      <Footer />
-    </>;
+    return (
+      <>
+        <div className="h-[25vh] md:h-[30vh] lg:h-[40vh] w-full">
+          <Navbar />
+        </div>
+        <section className="w-full bg-allsnowflake flex items-center justify-center py-20">
+          <div className="text-h3 text-allpurple">
+            Loading program details...
+          </div>
+        </section>
+        <Footer />
+      </>
+    );
   }
   if (error) {
     return (

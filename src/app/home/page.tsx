@@ -55,11 +55,11 @@ export default function HomePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const cardGridRef = useRef<HTMLDivElement>(null);
-  const isInitialMount = useRef(true); // Track initial mount
 
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState("allmaxed");
   const [cardsPerPage, setCardsPerPage] = useState(9);
+  const isInitialLoad = useRef(true);
 
   // Function to update URL with current state
   const updateURL = useCallback(
@@ -67,27 +67,12 @@ export default function HomePage() {
       const params = new URLSearchParams();
       params.set("category", category);
       params.set("page", page.toString());
-      router.replace(`/home?${params.toString()}`, { scroll: false });
+      router.push(`/home?${params.toString()}`, { scroll: false });
     },
     [router]
   );
 
-  // Sync initial state with URL on mount
-  useEffect(() => {
-    if (isInitialMount.current) {
-      const pageParam = searchParams.get("page");
-      const categoryParam = searchParams.get("category");
-      const newPage = pageParam ? parseInt(pageParam, 10) : 1;
-      const newCategory = categoryParam || "allmaxed";
-
-      setCurrentPage(newPage);
-      setSelectedCategory(newCategory);
-      updateURL(newCategory, newPage);
-      isInitialMount.current = false; // Mark as not initial after first run
-    }
-  }, [searchParams, updateURL]); // Dependencies are safe here
-
-  // Query for data fetching
+  // --------------- Query for data fetching ---------------
   const {
     data: cardData = [],
     isLoading,
@@ -117,6 +102,62 @@ export default function HomePage() {
     retry: 2,
   });
 
+  // --------------- Handle navigation state ---------------
+  useEffect(() => {
+    if (!isInitialLoad.current) return;
+
+    // Use Navigation API if available
+    if ("navigation" in window) {
+      const navigation = window.navigation as Navigation;
+      const transition = navigation.currentEntry
+        ? navigation.currentEntry.getState()
+        : null;
+      const isReload = transition === null || transition?.type === "reload"; // No type assertion needed
+
+      console.log("🔄 Navigation API - Transition:", transition);
+
+      if (isReload) {
+        console.log("🔄 Browser refresh detected - resetting to defaults");
+        setCurrentPage(1);
+        setSelectedCategory("allmaxed");
+        router.replace("/home", { scroll: false });
+      }
+    } else {
+      // Fallback for older browsers or if Navigation API isn't available
+      const hasUrlParams =
+        searchParams.get("page") || searchParams.get("category");
+      if (hasUrlParams && window.performance.navigation?.type === 1) {
+        console.log("🔄 Fallback refresh detected - resetting to defaults");
+        setCurrentPage(1);
+        setSelectedCategory("allmaxed");
+        router.replace("/home", { scroll: false });
+      }
+    }
+
+    isInitialLoad.current = false;
+  }, [router, searchParams]);
+
+  // Sync state with URL parameters
+  useEffect(() => {
+    const pageParam = searchParams.get("page");
+    const categoryParam = searchParams.get("category");
+    const newPage = pageParam ? parseInt(pageParam, 10) : 1;
+    const newCategory = categoryParam || "allmaxed";
+
+    const validPage = !isNaN(newPage) && newPage > 0 ? newPage : 1;
+    const validCategory = ["allmaxed", "skillstorm"].includes(newCategory)
+      ? newCategory
+      : "allmaxed";
+
+    console.log("🔗 URL changed - syncing state:", {
+      page: validPage,
+      category: validCategory,
+    });
+
+    setCurrentPage(validPage);
+    setSelectedCategory(validCategory);
+  }, [searchParams]);
+
   // Change cardsPerPage based on screen size
   useEffect(() => {
     const handleResize = () => {
@@ -145,11 +186,6 @@ export default function HomePage() {
       }, 100);
     }
   }, [searchParams, cardData, isLoading]);
-
-  // Update URL when state changes
-  useEffect(() => {
-    updateURL(selectedCategory, currentPage);
-  }, [selectedCategory, currentPage, updateURL]);
 
   const totalCards = cardData.length;
   const totalPages = Math.ceil(totalCards / cardsPerPage);
@@ -211,6 +247,13 @@ export default function HomePage() {
     }
   };
 
+  const handleCategoryChange = (value: string) => {
+    console.log("Category changed to:", value);
+    setSelectedCategory(value);
+    setCurrentPage(1);
+    updateURL(value, 1);
+  };
+
   const getErrorMessage = () => {
     if (error instanceof Error) {
       return error.message;
@@ -253,12 +296,7 @@ export default function HomePage() {
               <div className="flex-1 min-w-0 border-r-2 border-gray-300">
                 <Select
                   value={selectedCategory}
-                  onValueChange={(value) => {
-                    console.log("Category changed to:", value);
-                    setSelectedCategory(value);
-                    setCurrentPage(1);
-                    updateURL(value, 1);
-                  }}
+                  onValueChange={handleCategoryChange}
                 >
                   <SelectTrigger className="w-full px-5 py-3 bg-transparent border-none rounded-none text-allcharcoal text-md shadow-none hover:bg-purple-150 focus:ring-0 focus:border-none cursor-pointer">
                     <SelectValue placeholder="Select Category" />
@@ -296,17 +334,13 @@ export default function HomePage() {
               </Button>
             </div>
           </div>
+          {/* Mobile View ==== */}
           <div className="flex md:hidden flex-col gap-3">
             <div className="flex flex-col bg-[#EBE8FF] rounded-sm overflow-hidden py-2 px-3">
               <div className="flex-1 border-b-2 border-gray-300 py-1">
                 <Select
                   value={selectedCategory}
-                  onValueChange={(value) => {
-                    console.log("Category changed to:", value);
-                    setSelectedCategory(value);
-                    setCurrentPage(1);
-                    updateURL(value, 1);
-                  }}
+                  onValueChange={handleCategoryChange}
                 >
                   <SelectTrigger className="w-full px-5 py-4 bg-transparent border-none rounded-none text-gray-800 font-medium shadow-none hover:bg-purple-150 focus:ring-0 focus:border-none cursor-pointer">
                     <SelectValue placeholder="Category" />
@@ -390,7 +424,11 @@ export default function HomePage() {
                       (page) => (
                         <PaginationItem key={page}>
                           <PaginationLink
-                            className="cursor-pointer"
+                            className={`cursor-pointer ${
+                              currentPage === page
+                                ? "bg-allpurple text-white rounded-md"
+                                : "text-allpurple"
+                            }`}
                             onClick={() => handlePageChange(page)}
                             isActive={currentPage === page}
                           >
