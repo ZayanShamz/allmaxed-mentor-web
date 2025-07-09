@@ -4,7 +4,8 @@ import axios, { AxiosError } from "axios";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/context/authStore";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useSessionStore } from "@/context/useSessionStore";
 
 // ui
 import toast from "react-hot-toast";
@@ -55,13 +56,12 @@ const SkillstormCard: React.FC<SkillstormProps> = ({
   const pathname = usePathname();
   const queryClient = useQueryClient();
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { userToken } = useAuthStore();
+  const { selectedCategory, currentPage, setCardId } = useSessionStore();
   const [isWithdrawingLocal, setIsWithdrawingLocal] = useState(false);
 
-  // Function to handle card click with state preservation
+  // Handle card click to set cardId and navigate
   const handleCardClick = (e: React.MouseEvent) => {
-    // Don't navigate if clicking on withdrawal button or alert dialog
     if (
       (e.target as HTMLElement).closest("button") ||
       (e.target as HTMLElement).closest('[role="dialog"]')
@@ -69,21 +69,12 @@ const SkillstormCard: React.FC<SkillstormProps> = ({
       return;
     }
 
-    // Get current page state from URL or defaults
-    const currentCategory = searchParams.get("category") || "skillstorm";
-    const currentPage = searchParams.get("page") || "1";
-
-    // Navigate to workshop details with return state
-    const returnParams = new URLSearchParams();
-    returnParams.set("category", currentCategory);
-    returnParams.set("page", currentPage);
-    returnParams.set("cardId", workshopId || "");
-
-    router.push(
-      `/home/workshops/${workshopId}?returnTo=${encodeURIComponent(
-        `/home?${returnParams.toString()}`
-      )}`
-    );
+    setCardId(workshopId || null);
+    const params = new URLSearchParams();
+    params.set("category", selectedCategory);
+    params.set("page", currentPage.toString());
+    if (workshopId) params.set("cardId", workshopId);
+    router.push(`/home/workshops/${workshopId}?${params.toString()}`);
   };
 
   // Mutation for withdrawing application
@@ -97,7 +88,6 @@ const SkillstormCard: React.FC<SkillstormProps> = ({
     },
     onSuccess: () => {
       toast.success("Application withdrawn successfully!");
-      // Invalidate and refetch workshop data to get updated applications
       queryClient.invalidateQueries({ queryKey: ["workshop", workshopId] });
     },
     onError: (error: unknown) => {

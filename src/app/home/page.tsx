@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "@/context/authStore";
+import { useSessionStore } from "@/context/useSessionStore";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import AllmaxedCard from "@/components/AllmaxedCard";
@@ -28,7 +29,6 @@ import {
   PaginationNext,
   PaginationLink,
 } from "@/components/ui/pagination";
-
 interface AllmaxedCardData {
   id: string;
   title: string;
@@ -52,25 +52,49 @@ interface SkillstormCardData {
 
 export default function HomePage() {
   const { userToken } = useAuthStore();
+  const {
+    selectedCategory,
+    setSelectedCategory,
+    currentPage,
+    setCurrentPage,
+    cardId,
+    setCardId,
+    isInitialized,
+    setInitialized,
+  } = useSessionStore();
   const router = useRouter();
   const searchParams = useSearchParams();
   const cardGridRef = useRef<HTMLDivElement>(null);
+  const isInitialMount = useRef(true);
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const [selectedCategory, setSelectedCategory] = useState("allmaxed");
   const [cardsPerPage, setCardsPerPage] = useState(9);
-  const isInitialLoad = useRef(true);
 
-  // Function to update URL with current state
-  const updateURL = useCallback(
-    (category: string, page: number) => {
-      const params = new URLSearchParams();
-      params.set("category", category);
-      params.set("page", page.toString());
-      router.push(`/home?${params.toString()}`, { scroll: false });
-    },
-    [router]
-  );
+  // --------------- Page navigation and state management ---------------
+  // Reset state on page refresh
+  useEffect(() => {
+    if (isInitialMount.current && !isInitialized) {
+      setSelectedCategory("allmaxed");
+      setCurrentPage(1);
+      setCardId(null);
+      setInitialized(true);
+      isInitialMount.current = false;
+    }
+  }, [
+    setSelectedCategory,
+    setCurrentPage,
+    setCardId,
+    isInitialized,
+    setInitialized,
+  ]);
+
+  // Update URL when state changes
+  useEffect(() => {
+    const params = new URLSearchParams();
+    params.set("category", selectedCategory);
+    params.set("page", currentPage.toString());
+    if (cardId) params.set("cardId", cardId);
+    router.push(`/home?${params.toString()}`, { scroll: false });
+  }, [selectedCategory, currentPage, cardId, router, searchParams]);
 
   // --------------- Query for data fetching ---------------
   const {
@@ -102,61 +126,21 @@ export default function HomePage() {
     retry: 2,
   });
 
-  // --------------- Handle navigation state ---------------
+  // Scroll to last clicked card after data loads
   useEffect(() => {
-    if (!isInitialLoad.current) return;
-
-    // Use Navigation API if available
-    if ("navigation" in window) {
-      const navigation = window.navigation as Navigation;
-      const transition = navigation.currentEntry
-        ? navigation.currentEntry.getState()
-        : null;
-      const isReload = transition === null || transition?.type === "reload"; // No type assertion needed
-
-      console.log("🔄 Navigation API - Transition:", transition);
-
-      if (isReload) {
-        console.log("🔄 Browser refresh detected - resetting to defaults");
-        setCurrentPage(1);
-        setSelectedCategory("allmaxed");
-        router.replace("/home", { scroll: false });
-      }
-    } else {
-      // Fallback for older browsers or if Navigation API isn't available
-      const hasUrlParams =
-        searchParams.get("page") || searchParams.get("category");
-      if (hasUrlParams && window.performance.navigation?.type === 1) {
-        console.log("🔄 Fallback refresh detected - resetting to defaults");
-        setCurrentPage(1);
-        setSelectedCategory("allmaxed");
-        router.replace("/home", { scroll: false });
-      }
+    if (cardId && cardData.length > 0 && !isLoading) {
+      setTimeout(() => {
+        const cardElement = document.getElementById(`card-${cardId}`);
+        if (cardElement) {
+          cardElement.scrollIntoView({ behavior: "smooth", block: "center" });
+          cardElement.style.boxShadow = "0 0 20px rgba(147, 51, 234, 0.3)";
+          setTimeout(() => {
+            cardElement.style.boxShadow = "";
+          }, 2000);
+        }
+      }, 100);
     }
-
-    isInitialLoad.current = false;
-  }, [router, searchParams]);
-
-  // Sync state with URL parameters
-  useEffect(() => {
-    const pageParam = searchParams.get("page");
-    const categoryParam = searchParams.get("category");
-    const newPage = pageParam ? parseInt(pageParam, 10) : 1;
-    const newCategory = categoryParam || "allmaxed";
-
-    const validPage = !isNaN(newPage) && newPage > 0 ? newPage : 1;
-    const validCategory = ["allmaxed", "skillstorm"].includes(newCategory)
-      ? newCategory
-      : "allmaxed";
-
-    console.log("🔗 URL changed - syncing state:", {
-      page: validPage,
-      category: validCategory,
-    });
-
-    setCurrentPage(validPage);
-    setSelectedCategory(validCategory);
-  }, [searchParams]);
+  }, [cardId, cardData, isLoading]);
 
   // Change cardsPerPage based on screen size
   useEffect(() => {
@@ -168,25 +152,6 @@ export default function HomePage() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Scroll to last clicked card after data loads
-  useEffect(() => {
-    const lastClickedCardId = searchParams.get("cardId");
-    if (lastClickedCardId && cardData.length > 0 && !isLoading) {
-      setTimeout(() => {
-        const cardElement = document.getElementById(
-          `card-${lastClickedCardId}`
-        );
-        if (cardElement) {
-          cardElement.scrollIntoView({ behavior: "smooth", block: "center" });
-          cardElement.style.boxShadow = "0 0 20px rgba(147, 51, 234, 0.3)";
-          setTimeout(() => {
-            cardElement.style.boxShadow = "";
-          }, 2000);
-        }
-      }, 100);
-    }
-  }, [searchParams, cardData, isLoading]);
-
   const totalCards = cardData.length;
   const totalPages = Math.ceil(totalCards / cardsPerPage);
   const startIndex = (currentPage - 1) * cardsPerPage;
@@ -196,7 +161,11 @@ export default function HomePage() {
     if (selectedCategory === "allmaxed") {
       const allmaxedCard = card as AllmaxedCardData;
       return (
-        <div key={allmaxedCard.id} id={`card-${allmaxedCard.id}`}>
+        <div
+          key={allmaxedCard.id}
+          id={`card-${allmaxedCard.id}`}
+          className="h-full w-full"
+        >
           <AllmaxedCard
             programId={allmaxedCard.id}
             title={allmaxedCard.title}
@@ -217,7 +186,11 @@ export default function HomePage() {
     } else {
       const skillstormCard = card as SkillstormCardData;
       return (
-        <div key={skillstormCard.id} id={`card-${skillstormCard.id}`}>
+        <div
+          key={skillstormCard.id}
+          id={`card-${skillstormCard.id}`}
+          className="h-full w-full"
+        >
           <SkillstormCard
             workshopId={skillstormCard.id}
             topic={skillstormCard.topic}
@@ -243,7 +216,7 @@ export default function HomePage() {
     if (page >= 1 && page <= totalPages) {
       console.log("Changing to page:", page);
       setCurrentPage(page);
-      updateURL(selectedCategory, page);
+      setCardId(null);
     }
   };
 
@@ -251,7 +224,7 @@ export default function HomePage() {
     console.log("Category changed to:", value);
     setSelectedCategory(value);
     setCurrentPage(1);
-    updateURL(value, 1);
+    setCardId(null);
   };
 
   const getErrorMessage = () => {
@@ -313,7 +286,7 @@ export default function HomePage() {
               <div className="flex-1 min-w-0">
                 <Select disabled>
                   <SelectTrigger className="w-full px-5 py-3 bg-transparent border-none rounded-none text-allcharcoal text-md shadow-none hover:bg-purple-150 focus:ring-0 focus:border-none cursor-pointer">
-                    <SelectValue placeholder="Select Course" />
+                    <SelectValue placeholder="Select Course Level" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="beginner">Beginner Level</SelectItem>

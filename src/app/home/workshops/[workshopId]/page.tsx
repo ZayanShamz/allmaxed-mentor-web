@@ -4,12 +4,13 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { SlashIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useParams, useSearchParams, useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { useAuthStore } from "@/context/authStore";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios, { AxiosError } from "axios";
 import toast from "react-hot-toast";
+import { useSessionStore } from "@/context/useSessionStore";
 
 interface workshopDetails {
   id: number;
@@ -71,27 +72,22 @@ export default function WorkshopDetailsPage() {
   const { workshopId } = useParams<{ workshopId: string }>();
 
   const router = useRouter();
-  const searchParams = useSearchParams();
   const queryClient = useQueryClient();
 
+  const { selectedCategory, currentPage, cardId } = useSessionStore();
   const userToken = useAuthStore((state) => state.userToken);
   const userId = useAuthStore((state) => state.mentorData?.user_id);
-
-  const returnTo = searchParams.get("returnTo");
 
   // to manage ze buttons
   const [isApplyingLocal, setIsApplyingLocal] = useState(false);
   const [isWithdrawingLocal, setIsWithdrawingLocal] = useState(false);
 
   const handleBackNavigation = () => {
-    console.log("Navigating back to:", returnTo);
-    if (returnTo) {
-      // Decode and navigate to the return URL with preserved state
-      router.push(decodeURIComponent(returnTo));
-    } else {
-      // Fallback to regular back navigation
-      router.back();
-    }
+    const params = new URLSearchParams();
+    params.set("category", selectedCategory);
+    params.set("page", currentPage.toString());
+    if (cardId) params.set("cardId", cardId);
+    router.push(`/home?${params.toString()}`);
   };
 
   // Query for fetching workshop details
@@ -154,7 +150,6 @@ export default function WorkshopDetailsPage() {
     },
     onSuccess: () => {
       toast.success("Application withdrawn successfully!");
-      // Invalidate and refetch workshop data to get updated applications
       queryClient.invalidateQueries({ queryKey: ["workshop", workshopId] });
     },
     onError: (error: unknown) => {
