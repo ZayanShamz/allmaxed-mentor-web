@@ -5,7 +5,7 @@ import { MapPin, Users } from "lucide-react";
 import { Button } from "./ui/button";
 import { MoveRight } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import axios, { AxiosError } from "axios";
 import { useState } from "react";
 import toast from "react-hot-toast";
@@ -22,6 +22,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { useSessionStore } from "@/context/useSessionStore";
 
 interface AllmaxedProps {
   programId?: string;
@@ -55,9 +56,32 @@ const AllmaxedCard: React.FC<AllmaxedProps> = ({
   const queryClient = useQueryClient();
   const pathname = usePathname();
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { userToken } = useAuthStore();
+  const { selectCardAndNavigate } = useSessionStore();
   const [isWithdrawingLocal, setIsWithdrawingLocal] = useState(false);
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    if (
+      (e.target as HTMLElement).closest("button") ||
+      (e.target as HTMLElement).closest('[role="dialog"]')
+    ) {
+      console.log("Click ignored: target is button or dialog");
+      return;
+    }
+
+    if (!programId) {
+      console.error("No programId provided");
+      return;
+    }
+
+    console.log("handleCardClick: programId =", programId);
+    const url = selectCardAndNavigate(programId, `/home/programs/${programId}`);
+    console.log("Attempting navigation to:", url);
+    setTimeout(() => {
+      router.push(url);
+      console.log("Navigation executed:", url);
+    }, 0);
+  };
 
   const withdrawMutation = useMutation({
     mutationFn: () => withdrawApplication(programId!, userToken!),
@@ -96,33 +120,6 @@ const AllmaxedCard: React.FC<AllmaxedProps> = ({
     }
 
     withdrawMutation.mutate();
-  };
-
-  const handleCardClick = (e: React.MouseEvent) => {
-    // Prevent navigation if clicking on a button or within an alert dialog
-    if (
-      (e.target as HTMLElement).closest("button") ||
-      (e.target as HTMLElement).closest('[role="dialog"]')
-    ) {
-      return;
-    }
-
-    // Get current page state from URL or defaults
-    const currentCategory = searchParams.get("category") || "allmaxed";
-    const currentPage = searchParams.get("page") || "1";
-
-    // Construct return parameters for state preservation
-    const returnParams = new URLSearchParams();
-    returnParams.set("category", currentCategory);
-    returnParams.set("page", currentPage);
-    returnParams.set("cardId", programId || "");
-
-    // Navigate to program details with return state
-    router.push(
-      `/home/programs/${programId}?returnTo=${encodeURIComponent(
-        `/home?${returnParams.toString()}`
-      )}`
-    );
   };
 
   return (

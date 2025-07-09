@@ -1,69 +1,40 @@
-# Last Commit: Enhanced Pagination & Navigation State Management
+# Last Commit: Simplified Navigation State Management with Zustand
 
 ## Overview
 
-This commit introduces comprehensive pagination improvements and enhanced navigation state management for the home page, including browser refresh handling and card highlighting functionality.
+replaced the overly complex navigation state management, now using a new Zustand store useSessionStore.ts.
 
 ## Key Changes
 
-### 🔢 Advanced Pagination System
+### 🏠 Simplified Navigation with Zustand
 
-- **Dynamic Cards Per Page**: Implemented responsive pagination that adjusts based on screen size (8 cards on mobile, 9 on desktop)
-- **URL State Synchronization**: Pagination state is now properly synchronized with URL parameters
-- **Navigation API Integration**: Added support for modern Navigation API with fallback for older browsers
-
-### 🏠 Enhanced Home Page Navigation
-
-- **State Preservation**: Improved state preserving navigation with proper URL parameter handling
-- **Card Highlighting**: Added visual feedback when returning from workshop details with highlighted cards
-- **Scroll Restoration**: Automatic scrolling to last viewed card with smooth animation
-- **Category Management**: Better category switching with proper state management
-
-### 🎯 Card Interaction Improvements
-
-- **Click Handling**: Enhanced card click detection to prevent navigation when clicking buttons or dialogs
-- **Return State**: Cards now preserve return state for seamless navigation back to home page
-- **Visual Feedback**: Added temporary highlight effect for cards when returning from details
-
-### 🔄 Query Optimization
-
-- **React Query Integration**: Improved data fetching with proper caching and error handling
-- **Stale Time Management**: Added 5-minute stale time for better performance
-- **Retry Logic**: Implemented retry mechanism for failed API calls
-- **Loading States**: Enhanced loading indicators and error states
+- **Zustand Store Integration**: Implemented `selectCardAndNavigate` in `useSessionStore.ts` to atomically set `cardId` and generate navigation URLs.
+- **Single-Click Navigation Fix**: Resolved double-click issue in `SkillstormCard` using `setTimeout` in `handleCardClick` to ensure state updates before `router.push`.
+- **Details Pages Updated**: Ensured `programs/[programId]` and `workshops/[workshopId]` pages use the simplified Zustand store for back navigation, preserving state (category, page, `cardId`).
 
 ## Technical Details
 
 ### New Features
 
-- Responsive pagination system
-- Navigation API integration with fallback
-- Browser refresh detection and handling (in progress)
-- Card highlighting and scroll restoration
-- Enhanced URL state management
-- Improved error handling and loading states
+- Simplified navigation state management via Zustand’s `selectCardAndNavigate`.
+- Single-click navigation with `setTimeout` in `handleCardClick`.
 
-### Failed
+### Fixed
 
-- **Browser Refresh Handling**: Properly handles browser refresh events to reset to default state
-
-### Browser Compatibility
-
-- **Modern Browsers**: Uses Navigation API for enhanced experience
-- **Legacy Support**: Fallback mechanisms for older browsers
+- **Double-Click Issue**: Single-click navigation achieved in both `SkillstormCard` and `AllmaxedCard` using `setTimeout`.
+- **Overcomplicated State Management**: Replaced with Zustand for simplicity and reliability.
 
 ### Files Modified
 
-- `src/app/home/page.tsx` - Main pagination and navigation logic
-- `src/components/SkillstormCard.tsx` - Enhanced click handling
-- `src/components/ui/pagination.tsx` - Pagination component improvements
-- `src/components/ui/button.tsx` - Button variant additions
+- `src/app/home/page.ts` - Removed old complex navigation state management.
+- `src/app/home/programs/[programId]/page.tsx` - Updated for Zustand-based back navigation.
+- `src/app/home/workshops/[workshopId]/page.tsx` - Aligned with simplified navigation.
+- `src/context/useSessionStore.ts` - Added `selectCardAndNavigate` for navigation.
+- `src/components/SkillstormCard.tsx` - Fixed double-click with `setTimeout`.
+- `src/components/AllmaxedCard.tsx` - Applied same navigation fix as `SkillstormCard`.
 
 ## Benefits
 
-- ✅ Responsive pagination that adapts to screen size
-- ✅ Seamless navigation with state preservation
-- ✅ Enhanced user experience with card highlighting
-- ✅ Proper browser refresh handling
-- ✅ Improved performance with React Query optimization
-- ✅ Better accessibility and visual feedback
+- ✅ Streamlined navigation with Zustand store.
+- ✅ Single-click card navigation for both `SkillstormCard` and `AllmaxedCard`.
+- ✅ Simplified code by removing complex state management.

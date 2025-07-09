@@ -57,7 +57,7 @@ const SkillstormCard: React.FC<SkillstormProps> = ({
   const queryClient = useQueryClient();
   const router = useRouter();
   const { userToken } = useAuthStore();
-  const { selectedCategory, currentPage, setCardId } = useSessionStore();
+  const { selectCardAndNavigate } = useSessionStore();
   const [isWithdrawingLocal, setIsWithdrawingLocal] = useState(false);
 
   // Handle card click to set cardId and navigate
@@ -66,15 +66,25 @@ const SkillstormCard: React.FC<SkillstormProps> = ({
       (e.target as HTMLElement).closest("button") ||
       (e.target as HTMLElement).closest('[role="dialog"]')
     ) {
+      console.log("Click ignored: target is button or dialog");
       return;
     }
 
-    setCardId(workshopId || null);
-    const params = new URLSearchParams();
-    params.set("category", selectedCategory);
-    params.set("page", currentPage.toString());
-    if (workshopId) params.set("cardId", workshopId);
-    router.push(`/home/workshops/${workshopId}?${params.toString()}`);
+    if (!workshopId) {
+      console.error("No workshopId provided");
+      return;
+    }
+
+    console.log("handleCardClick: workshopId =", workshopId);
+    const url = selectCardAndNavigate(
+      workshopId,
+      `/home/workshops/${workshopId}`
+    );
+    console.log("Attempting navigation to:", url);
+    setTimeout(() => {
+      router.push(url);
+      console.log("Navigation executed:", url);
+    }, 0);
   };
 
   // Mutation for withdrawing application

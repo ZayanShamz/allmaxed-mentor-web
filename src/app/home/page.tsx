@@ -92,7 +92,6 @@ export default function HomePage() {
     const params = new URLSearchParams();
     params.set("category", selectedCategory);
     params.set("page", currentPage.toString());
-    if (cardId) params.set("cardId", cardId);
     router.push(`/home?${params.toString()}`, { scroll: false });
   }, [selectedCategory, currentPage, cardId, router, searchParams]);
 
@@ -359,7 +358,9 @@ export default function HomePage() {
             ref={cardGridRef}
           >
             {isLoading ? (
-              <div className="text-center text-allcharcoal">Loading...</div>
+              <div className="text-center text-allcharcoal w-full">
+                Loading...
+              </div>
             ) : isError ? (
               <div className="text-center text-red-500">
                 {getErrorMessage()}
