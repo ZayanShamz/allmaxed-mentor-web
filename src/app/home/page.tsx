@@ -163,7 +163,7 @@ export default function HomePage() {
         <div
           key={allmaxedCard.id}
           id={`card-${allmaxedCard.id}`}
-          className="h-full w-full"
+          className="h-full w-full rounded-xl"
         >
           <AllmaxedCard
             programId={allmaxedCard.id}
@@ -188,7 +188,7 @@ export default function HomePage() {
         <div
           key={skillstormCard.id}
           id={`card-${skillstormCard.id}`}
-          className="h-full w-full"
+          className="h-full w-full rounded-xl"
         >
           <SkillstormCard
             workshopId={skillstormCard.id}
