@@ -243,7 +243,7 @@ export default function Appliedpage() {
           </div>
         </div>
 
-        <div className="w-[80vw] sm:w-[70vw] md:w-[80vw] lg:w-[80vw] min-h-dvh flex justify-center px-5 mt-8">
+        <div className="w-[80vw] sm:w-[70vw] md:w-[80vw] lg:w-[80vw] min-h-dvh flex justify-center mt-8">
           <div className="relative overflow-hidden w-full">
             {/* Allmaxed Tab Content */}
             <div
