@@ -12,7 +12,7 @@
 
 ## 🔖 Commit 21-07
 
-## **Made some minor ui/ux changes**
+**Made some minor ui/ux changes**
 
 ### Summary
 
