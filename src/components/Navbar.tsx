@@ -3,15 +3,14 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useAuthStore } from "@/context/authStore";
 import toast from "react-hot-toast";
+import Sidebar from "./Sidebar";
+
+// ui
+import { Menu } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import {
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-} from "@/components/ui/popover";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,10 +22,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Command, CommandItem } from "@/components/ui/command";
-import { usePathname } from "next/navigation";
-import Sidebar from "./Sidebar";
-import { Menu } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function Navbar() {
   const [avatarOpen, setAvatarOpen] = useState(false);
@@ -82,8 +84,12 @@ export default function Navbar() {
           {/* Desktop Avatar & Profile/Logout Menu -+- Mobile View Menu */}
           <div className="flex md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse">
             <div className="hidden md:flex">
-              <Popover open={avatarOpen} onOpenChange={setAvatarOpen}>
-                <PopoverTrigger asChild>
+              <DropdownMenu
+                modal={false}
+                open={avatarOpen}
+                onOpenChange={setAvatarOpen}
+              >
+                <DropdownMenuTrigger>
                   <Avatar className="cursor-pointer">
                     <AvatarImage
                       src="https://github.com/shadcn.png"
@@ -91,62 +97,51 @@ export default function Navbar() {
                     />
                     <AvatarFallback>CN</AvatarFallback>
                   </Avatar>
-                </PopoverTrigger>
-                <PopoverContent className="w-40 p-0" align="end">
-                  <Command className="py-5 px-3 bg-allsnowflake">
-                    <CommandItem
-                      asChild
-                      className="w-full p-3 cursor-pointer hover:bg-white"
-                    >
-                      <Link
-                        href="/profile"
-                        onClick={() => setAvatarOpen(false)}
-                      >
-                        <div className="text-[16px]">Profile</div>
-                      </Link>
-                    </CommandItem>
-                    <hr className="border-1 border-gray-300" />
-                    <CommandItem asChild>
-                      <AlertDialog>
-                        <AlertDialogTrigger
-                          asChild
-                          className="w-full p-3 cursor-pointer hover:bg-white"
-                        >
-                          <div className="text-[16px]">Logout</div>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle className="text-xl">
-                              Are you sure?
-                            </AlertDialogTitle>
-                            <AlertDialogDescription className="text-md">
-                              You will be logged out of your account. This
-                              action cannot be undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel
-                              className="cursor-pointer"
-                              onClick={() => setAvatarOpen(false)}
-                            >
-                              Cancel
-                            </AlertDialogCancel>
-                            <AlertDialogAction
-                              className="cursor-pointer text-white bg-red-500  hover:bg-red-600"
-                              onClick={() => {
-                                handleLogout();
-                                setAvatarOpen(false);
-                              }}
-                            >
-                              Logout
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </CommandItem>
-                  </Command>
-                </PopoverContent>
-              </Popover>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuLabel className="cursor-pointer w-full">
+                    <Link href="/profile" onClick={() => setAvatarOpen(false)}>
+                      Profile
+                    </Link>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuLabel>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild className="cursor-pointer">
+                        <div>Logout</div>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle className="text-xl">
+                            Are you sure?
+                          </AlertDialogTitle>
+                          <AlertDialogDescription className="text-md">
+                            You will be logged out of your account. This action
+                            cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel
+                            className="cursor-pointer"
+                            onClick={() => setAvatarOpen(false)}
+                          >
+                            Cancel
+                          </AlertDialogCancel>
+                          <AlertDialogAction
+                            className="cursor-pointer text-white bg-red-500  hover:bg-red-600"
+                            onClick={() => {
+                              handleLogout();
+                              setAvatarOpen(false);
+                            }}
+                          >
+                            Logout
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </DropdownMenuLabel>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
 
             {/* replace this avatar with the hamburger */}

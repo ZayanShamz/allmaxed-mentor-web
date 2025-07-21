@@ -88,8 +88,10 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           <nav className="">
             <a
               href="/home"
-              className={`block px-4 py-5 text-allsnowflake text-center border-b border-gray-600 ${
-                pathname === "/home" ? "border-white" : "border-gray-600"
+              className={`block px-4 py-5 text-center border-b  ${
+                pathname === "/home"
+                  ? "border-white text-allsnowflake text-shadow-[0_0_8px_rgba(255,255,255,0.5)]"
+                  : "border-gray-600 text-gray-400"
               }`}
               onClick={onClose}
               aria-current="page"
@@ -98,8 +100,10 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             </a>
             <a
               href="/profile"
-              className={`block px-4 py-5 text-allsnowflake text-center border-b border-gray-600 ${
-                pathname === "/profile" ? "border-white" : "border-gray-600"
+              className={`block px-4 py-5 text-center border-b ${
+                pathname === "/profile"
+                  ? "border-white text-allsnowflake text-shadow-[0_0_8px_rgba(255,255,255,0.5)]"
+                  : "border-gray-600 text-gray-400"
               }`}
               onClick={onClose}
             >
@@ -107,8 +111,10 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             </a>
             <a
               href="/applied"
-              className={`block px-4 py-5 text-allsnowflake text-center border-b ${
-                pathname === "/applied" ? "border-white" : "border-gray-600"
+              className={`block px-4 py-5 text-center border-b ${
+                pathname === "/applied"
+                  ? "border-white text-allsnowflake text-shadow-[0_0_8px_rgba(255,255,255,0.5)]"
+                  : "border-gray-600 text-gray-400"
               }`}
               onClick={onClose}
             >
@@ -116,8 +122,10 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             </a>
             <a
               href="/colleges"
-              className={`block px-4 py-5 text-allsnowflake text-center border-b border-gray-600 ${
-                pathname === "/colleges" ? "border-white" : "border-gray-600"
+              className={`block px-4 py-5 text-center border-b border-gray-600 ${
+                pathname === "/colleges"
+                  ? "border-white text-allsnowflake text-shadow-[0_0_8px_rgba(255,255,255,0.5)]"
+                  : "border-gray-600 text-gray-400"
               }`}
               onClick={onClose}
             >

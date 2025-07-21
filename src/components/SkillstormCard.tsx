@@ -9,7 +9,7 @@ import { useSessionStore } from "@/context/useSessionStore";
 
 // ui
 import toast from "react-hot-toast";
-import { MapPin, Users, MoveRight } from "lucide-react";
+import { MapPin, Users, MoveRight, Calendar } from "lucide-react";
 import { Button } from "./ui/button";
 import {
   AlertDialog,
@@ -22,6 +22,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface SkillstormProps {
   workshopId?: string;
@@ -132,53 +137,70 @@ const SkillstormCard: React.FC<SkillstormProps> = ({
       className="flex flex-col justify-center bg-white rounded-xl border border-gray-200 hover:shadow-lg transition-shadow duration-300 cursor-pointer w-full h-full"
       onClick={handleCardClick}
     >
-      <div className="h-full pt-8 px-8 pb-3">
+      <div className="h-full py-7 px-8 ">
         <div className="flex flex-col w-full h-full justify-between ">
-          {/* Top section */}
-          <div className="flex flex-col">
-            {/* Card Header */}
-            <div className="mb-4">
-              <h3 className="text-2xl font-semibold text-allpurple leading-tight">
+          {/* Top section - Card Header*/}
+          <div className="relative flex items-start pb-12">
+            <div className="flex-1 pr-16">
+              <h3 className="text-2xl font-semibold text-allpurple leading-tight pr-3">
                 {topic}
               </h3>
             </div>
-
-            {/* Location */}
-            <div className="flex items-start text-gray-500 mb-4 flex-1">
-              <MapPin className="w-4 h-4 mr-2 flex-shrink-0 mt-0.5" />
-              <span className="text-sm leading-snug line-clamp-2">
-                {location}
-              </span>
+            <div className="absolute top-2 right-0 flex items-center text-xs text-gray-400">
+              <Users className="w-3 h-3 mr-1" />
+              <span>{appliedCount} applied</span>
             </div>
           </div>
 
-          {/* Bottom section - Date, Tags, and Footer */}
+          {/* Bottom section - Location, Date, Tags, and Footer */}
           <div className="flex flex-col mt-auto">
+            {/* Location */}
+            <div className="flex items-start text-gray-500 mb-2 flex-1">
+              <MapPin className="w-4 h-4 mr-2 flex-shrink-0 mt-0.5" />
+              <span className="text-sm truncate">{location}</span>
+            </div>
             {/* Date */}
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-lg font-bold text-black">{date}</span>
+            <div className="flex items-center mb-2">
+              <Calendar className="w-4 h-4 mr-2 text-gray-500" />
+              <span className="text-md font-bold text-allcharcoal">{date}</span>
             </div>
 
             {/* Tags */}
-            <div className="flex gap-2 justify-start items-center w-full mb-3">
-              <span className="px-3 py-1 bg-[#EBE8FF] text-allcharcoal text-sm font-medium rounded-full">
-                {level_required}
-              </span>
-              <span className="px-3 py-1 bg-[#EBE8FF] text-allcharcoal text-sm font-medium rounded-full line-clamp-1">
-                {duration}
-              </span>
-              <span className="px-3 py-1 bg-allpurple text-allsnowflake text-sm font-medium rounded-full">
-                {pay}/hr
-              </span>
+            <div className="flex gap-2 justify-start items-center w-full">
+              <Tooltip>
+                <TooltipTrigger>
+                  <span className="px-3 py-1 bg-[#EBE8FF] text-allcharcoal text-sm font-medium rounded-full">
+                    {level_required}
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                  <p>Level Required</p>
+                </TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger>
+                  <span className="px-3 py-1 bg-[#EBE8FF] text-allcharcoal text-sm font-medium rounded-full line-clamp-1">
+                    {duration}
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                  <p>Course Duration</p>
+                </TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger>
+                  <span className="px-3 py-1 bg-allpurple text-allsnowflake text-sm font-medium rounded-full">
+                    {pay}/hr {/* per hour fixed? */}
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                  <p>Payment</p>
+                </TooltipContent>
+              </Tooltip>
             </div>
 
             {/* Footer */}
-            <div className="flex gap-2 justify-end w-full">
-              <div className="flex items-center text-xs text-gray-400">
-                <Users className="w-3 h-3 mr-1" />
-                <span>{appliedCount} applied</span>
-              </div>
-            </div>
+            <div className="flex gap-2 justify-end w-full"></div>
           </div>
         </div>
       </div>

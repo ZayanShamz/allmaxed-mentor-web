@@ -248,7 +248,7 @@ export default function HomePage() {
         }}
       >
         <Navbar />
-        <div className="responsive-one flex flex-col items-center justify-center mx-auto h-dvh text-center">
+        <div className="responsive-one flex flex-col items-center justify-center mx-auto h-svh lg:h-dvh text-center">
           <h1 className="text-6xl md:text-7xl text-white font-bold leading-tight">
             Let’s Share Your Skills!
           </h1>
@@ -262,6 +262,7 @@ export default function HomePage() {
       </div>
 
       <section className="w-full min-h-screen bg-allsnowflake flex flex-col items-center justify-start py-20">
+        {/* Sorting and Filtering */}
         <div className="w-[90vw] sm:w-[70vw] md:w-[80vw] lg:w-[70vw] bg-white border rounded-md p-5">
           <div className="hidden md:flex gap-4 items-center">
             <div className="flex flex-1 bg-[#EBE8FF] rounded-sm overflow-hidden min-w-0 py-2 items-center">
@@ -352,6 +353,7 @@ export default function HomePage() {
           </div>
         </div>
 
+        {/* Card Grid */}
         <div className="w-[80vw] sm:w-[70vw] md:w-[80vw] lg:w-[80vw] flex flex-col justify-center items-center pt-10">
           <div
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 items-center w-full gap-4"

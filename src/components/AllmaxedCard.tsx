@@ -3,13 +3,14 @@
 import React from "react";
 import { MapPin, Users } from "lucide-react";
 import { Button } from "./ui/button";
-import { MoveRight } from "lucide-react";
+import { MoveRight, Calendar } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { usePathname, useRouter } from "next/navigation";
 import axios, { AxiosError } from "axios";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { useAuthStore } from "@/context/authStore";
+import { useSessionStore } from "@/context/useSessionStore";
 
 import {
   AlertDialog,
@@ -22,7 +23,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { useSessionStore } from "@/context/useSessionStore";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface AllmaxedProps {
   programId?: string;
@@ -127,47 +132,64 @@ const AllmaxedCard: React.FC<AllmaxedProps> = ({
       className="flex flex-col justify-center bg-white rounded-xl border border-gray-200 hover:shadow-lg transition-shadow duration-300 cursor-pointer w-full h-full"
       onClick={handleCardClick}
     >
-      <div className="h-full pt-8 px-8 pb-3">
+      <div className="h-full py-7 px-8">
         <div className="flex flex-col h-full w-full justify-between">
-          {/* Top section - Card Header and Location */}
-          <div className="flex flex-col">
+          {/* Top section - Card Header */}
+          <div className="flex flex-col pb-12 ">
             {/* Card Header */}
-            <div className="mb-4">
-              <h3 className="text-2xl font-semibold text-allpurple">{title}</h3>
-            </div>
-
-            {/* Location */}
-            <div className="flex items-start text-gray-500 mb-4">
-              <MapPin className="w-4 h-4 mr-2 flex-shrink-0 mt-[3px]" />
-              <span className="text-sm leading-snug line-clamp-2">
-                {location}
-              </span>
+            <div className="relative flex items-start">
+              <div className="flex-1 pr-16">
+                <h3 className="text-2xl font-semibold text-allpurple leading-tight pr-3">
+                  {title}
+                </h3>
+              </div>
+              <div className="absolute top-2 right-0 flex items-center text-xs text-gray-400">
+                <Users className="w-3 h-3 mr-1" />
+                <span className="line-clamp-1">{appliedCount} applied</span>
+              </div>
             </div>
           </div>
 
           {/* Bottom section - Date, Tags, and Footer */}
           <div className="flex flex-col mt-auto">
+            {/* Location */}
+            <div className="flex items-start text-gray-500 mb-2">
+              <MapPin className="w-4 h-4 mr-2 flex-shrink-0 mt-[3px]" />
+              <span className="text-sm truncate">{location}</span>
+            </div>
             {/* Date */}
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-lg font-bold text-black">{date}</span>
+            <div className="flex items-center mb-2">
+              <Calendar className="w-4 h-4 mr-2 text-gray-500" />
+              <span className="text-md font-bold text-allcharcoal">{date}</span>
             </div>
 
             {/* Tags */}
-            <div className="flex flex-wrap justify-start gap-2 mb-3">
-              <span className="px-3 py-1 bg-[#EBE8FF] text-allcharcoal text-sm font-medium rounded-full">
-                {module}
-              </span>
-              <span className="px-3 py-1 bg-[#EBE8FF] text-allcharcoal text-sm font-medium rounded-full">
-                {level_required}
-              </span>
-            </div>
+            <div className="flex flex-wrap justify-start gap-2 py-1">
+              <Tooltip>
+                <TooltipTrigger>
+                  <div className="flex items-center justify-center">
+                    <span className="px-3 py-1 bg-[#EBE8FF] text-allcharcoal text-sm font-medium rounded-full">
+                      {module}
+                    </span>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                  <p>Module</p>
+                </TooltipContent>
+              </Tooltip>
 
-            {/* Footer - users applied section */}
-            <div className="flex justify-end">
-              <div className="flex items-center text-xs text-gray-400">
-                <Users className="w-3 h-3 mr-1" />
-                <span>{appliedCount} applied</span>
-              </div>
+              <Tooltip>
+                <TooltipTrigger>
+                  <div className="flex items-center justify-center">
+                    <span className="px-3 py-1 bg-[#EBE8FF] text-allcharcoal text-sm font-medium rounded-full">
+                      {level_required}
+                    </span>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                  <p>Level Required</p>
+                </TooltipContent>
+              </Tooltip>
             </div>
           </div>
         </div>
