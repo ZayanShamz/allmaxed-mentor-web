@@ -1,7 +1,7 @@
 "use client";
 
 import axios from "axios";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { SlashIcon } from "lucide-react";
 import Navbar from "@/components/Navbar";
@@ -17,6 +17,12 @@ import {
   PaginationNext,
   PaginationLink,
 } from "@/components/ui/pagination";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  type CarouselApi,
+} from "@/components/ui/carousel";
 
 interface AllmaxedData {
   id: string;
@@ -40,7 +46,6 @@ interface SkillstormData {
 }
 
 export default function Appliedpage() {
-  // states
   const [activeTab, setActiveTab] = useState<"allmaxed" | "skillstorm">(
     "allmaxed"
   );
@@ -52,6 +57,14 @@ export default function Appliedpage() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const [api, setApi] = useState<CarouselApi>();
+
+  // Ref to access the carousel container DOM element
+  const carouselRef = useRef<HTMLDivElement>(null);
+
+  // State to track the height of the currently active slide
+  const [activeHeight, setActiveHeight] = useState<number>(0);
 
   const userToken = useAuthStore((state) => state.userToken);
   // const userId = useAuthStore((state) => state.mentorData?.user_id);
@@ -76,15 +89,47 @@ export default function Appliedpage() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Reset Pagination on tab chnge
+  // Dynamic height adjustment using ResizeObserver
   useEffect(() => {
-    setCurrentPage(1);
-  }, [activeTab]);
+    if (!api || !carouselRef.current) return;
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
+    // Function to update carousel height based on active slide content
+    const updateHeight = () => {
+      const activeIndex = api.selectedScrollSnap();
+      const activeSlide = carouselRef.current?.querySelector(
+        `.carousel-slide:nth-child(${activeIndex + 1}) .slide-content`
+      ) as HTMLElement;
 
+      if (activeSlide) {
+        // Set height based on the actual content height of active slide
+        setActiveHeight(activeSlide.offsetHeight);
+      }
+    };
+
+    // Create ResizeObserver to watch for content changes in slides
+    const resizeObserver = new ResizeObserver(() => {
+      // Use setTimeout to ensure DOM updates are complete before measuring
+      setTimeout(updateHeight, 0);
+    });
+
+    // Observe all slide content containers for size changes
+    const slides = carouselRef.current.querySelectorAll(".slide-content");
+    slides.forEach((slide) => resizeObserver.observe(slide));
+
+    // Initial height calculation
+    updateHeight();
+
+    // Listen for carousel slide changes
+    api.on("select", updateHeight);
+
+    // Cleanup function to disconnect observer and remove event listeners
+    return () => {
+      resizeObserver.disconnect();
+      api.off("select", updateHeight);
+    };
+  }, [api, allmaxedData, skillstormData, currentPage]);
+
+  // Parallel data fetch
   useEffect(() => {
     const fetchAllData = async () => {
       if (!userToken) return;
@@ -125,6 +170,35 @@ export default function Appliedpage() {
 
     fetchAllData();
   }, [userToken]);
+
+  // Sync carousel and tab selection
+  useEffect(() => {
+    if (!api) return;
+
+    const handleSelect = () => {
+      const slideIndex = api.selectedScrollSnap();
+      setActiveTab(slideIndex === 0 ? "allmaxed" : "skillstorm");
+      // setCurrentPage(1); // Reset pagination on tab change
+    };
+
+    api.on("select", handleSelect);
+
+    return () => {
+      api.off("select", handleSelect);
+    };
+  }, [api]);
+
+  const handleTabChange = (tab: "allmaxed" | "skillstorm") => {
+    setActiveTab(tab);
+    // setCurrentPage(1); // Reset pagination
+    if (api) {
+      api.scrollTo(tab === "allmaxed" ? 0 : 1);
+    }
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
 
   const allmaxedCards = allmaxedData.slice(startIndex, endIndex).map((card) => {
     const allmaxedCard = card as AllmaxedData;
@@ -190,7 +264,7 @@ export default function Appliedpage() {
           backgroundRepeat: "no-repeat",
         }}
       >
-        <div className="max-w-screen-2xl flex items-center justify-start mx-auto h-full px-5">
+        <div className="w-full md:w-[75vw] flex items-center justify-start mx-auto h-full px-5">
           <div className="h-fit w-full flex items-center">
             <Link
               href="/home"
@@ -219,7 +293,7 @@ export default function Appliedpage() {
                 }`}
               />
               <button
-                onClick={() => setActiveTab("allmaxed")}
+                onClick={() => handleTabChange("allmaxed")}
                 className={`flex-1 text-center px-5 py-2 rounded-sm relative z-10 transition-all duration-300 cursor-pointer ${
                   activeTab === "allmaxed"
                     ? "text-[#6B46C1] font-medium"
@@ -230,7 +304,7 @@ export default function Appliedpage() {
               </button>
 
               <button
-                onClick={() => setActiveTab("skillstorm")}
+                onClick={() => handleTabChange("skillstorm")}
                 className={`flex-1 text-center px-5 py-2 rounded-sm relative z-10 transition-all duration-300 cursor-pointer ${
                   activeTab === "skillstorm"
                     ? "text-[#6B46C1] font-medium"
@@ -243,175 +317,182 @@ export default function Appliedpage() {
           </div>
         </div>
 
-        <div className="w-[80vw] sm:w-[70vw] md:w-[80vw] lg:w-[80vw] min-h-dvh flex justify-center mt-8">
-          <div className="relative overflow-hidden w-full">
-            {/* Allmaxed Tab Content */}
-            <div
-              className={`transition-all duration-500 ease-in-out ${
-                activeTab === "allmaxed"
-                  ? "opacity-100 translate-x-0"
-                  : "opacity-0 translate-x-full absolute inset-0"
-              }`}
+        <div className="w-[80vw] sm:w-[70vw] md:w-[80vw] lg:w-[80vw] flex justify-center ">
+          <div className="relative w-full">
+            <Carousel
+              ref={carouselRef}
+              className="w-full overflow-hidden cursor-grab active:cursor-grabbing"
+              style={{
+                height: activeHeight ? `${activeHeight}px` : "auto",
+                transition: "height 0.3s ease-in-out",
+              }}
+              setApi={setApi}
+              opts={{
+                align: "start",
+                loop: false,
+                dragFree: false,
+                skipSnaps: false,
+              }}
             >
-              <div className="w-full flex flex-col justify-center items-center pt-10">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 w-full gap-4 auto-rows-fr">
-                  {loading ? (
-                    <div className="md:col-span-2 lg:col-span-3 text-center text-lg text-allcharcoal">
-                      Loading...
-                    </div>
-                  ) : error ? (
-                    <div className="md:col-span-2 lg:col-span-3 text-lg text-center text-red-500">
-                      {error}
-                    </div>
-                  ) : allmaxedData.length === 0 ? (
-                    <div className="md:col-span-2 lg:col-span-3 text-lg text-center text-gray-500">
-                      No data available for this category.
-                    </div>
-                  ) : (
-                    allmaxedCards
-                  )}
-                </div>
-                {totalAllmaxedCards > cardsPerPage &&
-                  !loading &&
-                  !error &&
-                  allmaxedData.length > 0 && (
-                    <div className="flex justify-center mt-4">
-                      <Pagination>
-                        <PaginationContent>
-                          <PaginationItem>
-                            <PaginationPrevious
-                              onClick={() =>
-                                handlePageChange(
-                                  currentPage > 1 ? currentPage - 1 : 1
-                                )
-                              }
-                              className={
-                                currentPage === 1
-                                  ? "pointer-events-none opacity-50"
-                                  : "cursor-pointer"
-                              }
-                            />
-                          </PaginationItem>
-                          {Array.from(
-                            { length: totalAllmaxedPages },
-                            (_, i) => i + 1
-                          ).map((page) => (
-                            <PaginationItem key={page}>
-                              <PaginationLink
-                                className="cursor-pointer"
-                                onClick={() => handlePageChange(page)}
-                                isActive={currentPage === page}
-                              >
-                                {page}
-                              </PaginationLink>
-                            </PaginationItem>
-                          ))}
-                          <PaginationItem>
-                            <PaginationNext
-                              onClick={() =>
-                                handlePageChange(
-                                  currentPage < totalAllmaxedPages
-                                    ? currentPage + 1
-                                    : totalAllmaxedPages
-                                )
-                              }
-                              className={
-                                currentPage === totalAllmaxedPages
-                                  ? "pointer-events-none opacity-50"
-                                  : "cursor-pointer"
-                              }
-                            />
-                          </PaginationItem>
-                        </PaginationContent>
-                      </Pagination>
-                    </div>
-                  )}
-              </div>
-            </div>
+              <CarouselContent className="-ml-4 flex items-stretch cursor-grab active:cursor-grabbing">
+                <CarouselItem className="pl-4 carousel-slide flex flex-col">
+                  {/* Allmaxed Tab Content */}
 
-            {/* Skillstorm Tab Content */}
-            <div
-              className={`transition-all duration-500 ease-in-out ${
-                activeTab === "skillstorm"
-                  ? "opacity-100 translate-x-0"
-                  : "opacity-0 -translate-x-full absolute inset-0"
-              }`}
-            >
-              <div className="w-full flex flex-col justify-center items-center pt-10">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 w-full gap-4 auto-rows-fr">
-                  {loading ? (
-                    <div className="md:col-span-2 lg:col-span-3 text-lg w-full text-center text-allcharcoal">
-                      Loading...
+                  <div className="slide-content w-full flex flex-col justify-start items-center pt-10 select-none">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 w-full gap-4 auto-rows-fr">
+                      {loading ? (
+                        <div className="md:col-span-2 lg:col-span-3 text-center text-lg text-allcharcoal">
+                          Loading...
+                        </div>
+                      ) : error ? (
+                        <div className="md:col-span-2 lg:col-span-3 text-lg text-center text-red-500">
+                          {error}
+                        </div>
+                      ) : allmaxedData.length === 0 ? (
+                        <div className="md:col-span-2 lg:col-span-3 text-lg text-center text-gray-500">
+                          No data available for this category.
+                        </div>
+                      ) : (
+                        allmaxedCards
+                      )}
                     </div>
-                  ) : error ? (
-                    <div className="md:col-span-2 lg:col-span-3 text-lg text-center text-red-500">
-                      {error}
+                    {totalAllmaxedCards > cardsPerPage &&
+                      !loading &&
+                      !error &&
+                      allmaxedData.length > 0 && (
+                        <div className="flex justify-center mt-6">
+                          <Pagination>
+                            <PaginationContent>
+                              <PaginationItem>
+                                <PaginationPrevious
+                                  onClick={() =>
+                                    handlePageChange(
+                                      currentPage > 1 ? currentPage - 1 : 1
+                                    )
+                                  }
+                                  className={
+                                    currentPage === 1
+                                      ? "pointer-events-none opacity-50"
+                                      : "cursor-pointer"
+                                  }
+                                />
+                              </PaginationItem>
+                              {Array.from(
+                                { length: totalAllmaxedPages },
+                                (_, i) => i + 1
+                              ).map((page) => (
+                                <PaginationItem key={page}>
+                                  <PaginationLink
+                                    className="cursor-pointer"
+                                    onClick={() => handlePageChange(page)}
+                                    isActive={currentPage === page}
+                                  >
+                                    {page}
+                                  </PaginationLink>
+                                </PaginationItem>
+                              ))}
+                              <PaginationItem>
+                                <PaginationNext
+                                  onClick={() =>
+                                    handlePageChange(
+                                      currentPage < totalAllmaxedPages
+                                        ? currentPage + 1
+                                        : totalAllmaxedPages
+                                    )
+                                  }
+                                  className={
+                                    currentPage === totalAllmaxedPages
+                                      ? "pointer-events-none opacity-50"
+                                      : "cursor-pointer"
+                                  }
+                                />
+                              </PaginationItem>
+                            </PaginationContent>
+                          </Pagination>
+                        </div>
+                      )}
+                  </div>
+                </CarouselItem>
+                <CarouselItem className="pl-4 carousel-slide flex flex-col">
+                  {/* Skillstorm Tab Content */}
+
+                  <div className="slide-content w-full flex flex-col justify-start items-center pt-10 select-none ">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 w-full gap-4 auto-rows-fr">
+                      {loading ? (
+                        <div className="md:col-span-2 lg:col-span-3 text-lg w-full text-center text-allcharcoal">
+                          Loading...
+                        </div>
+                      ) : error ? (
+                        <div className="md:col-span-2 lg:col-span-3 text-lg text-center text-red-500">
+                          {error}
+                        </div>
+                      ) : skillstormData.length === 0 ? (
+                        <div className="md:col-span-2 lg:col-span-3 text-lg w-full text-center text-gray-500">
+                          No applications to show.
+                        </div>
+                      ) : (
+                        skillstormCards
+                      )}
                     </div>
-                  ) : skillstormData.length === 0 ? (
-                    <div className="md:col-span-2 lg:col-span-3 text-lg w-full text-center text-gray-500">
-                      No applications to show.
-                    </div>
-                  ) : (
-                    skillstormCards
-                  )}
-                </div>
-                {totalSkillstormCards > cardsPerPage &&
-                  !loading &&
-                  !error &&
-                  skillstormData.length > 0 && (
-                    <div className="flex justify-center mt-4">
-                      <Pagination>
-                        <PaginationContent>
-                          <PaginationItem>
-                            <PaginationPrevious
-                              onClick={() =>
-                                handlePageChange(
-                                  currentPage > 1 ? currentPage - 1 : 1
-                                )
-                              }
-                              className={
-                                currentPage === 1
-                                  ? "pointer-events-none opacity-50"
-                                  : "cursor-pointer"
-                              }
-                            />
-                          </PaginationItem>
-                          {Array.from(
-                            { length: totalSkillstormPages },
-                            (_, i) => i + 1
-                          ).map((page) => (
-                            <PaginationItem key={page}>
-                              <PaginationLink
-                                className="cursor-pointer"
-                                onClick={() => handlePageChange(page)}
-                                isActive={currentPage === page}
-                              >
-                                {page}
-                              </PaginationLink>
-                            </PaginationItem>
-                          ))}
-                          <PaginationItem>
-                            <PaginationNext
-                              onClick={() =>
-                                handlePageChange(
-                                  currentPage < totalSkillstormPages
-                                    ? currentPage + 1
-                                    : totalSkillstormPages
-                                )
-                              }
-                              className={
-                                currentPage === totalSkillstormPages
-                                  ? "pointer-events-none opacity-50"
-                                  : "cursor-pointer"
-                              }
-                            />
-                          </PaginationItem>
-                        </PaginationContent>
-                      </Pagination>
-                    </div>
-                  )}
-              </div>
-            </div>
+                    {totalSkillstormCards > cardsPerPage &&
+                      !loading &&
+                      !error &&
+                      skillstormData.length > 0 && (
+                        <div className="flex justify-center mt-6">
+                          <Pagination>
+                            <PaginationContent>
+                              <PaginationItem>
+                                <PaginationPrevious
+                                  onClick={() =>
+                                    handlePageChange(
+                                      currentPage > 1 ? currentPage - 1 : 1
+                                    )
+                                  }
+                                  className={
+                                    currentPage === 1
+                                      ? "pointer-events-none opacity-50"
+                                      : "cursor-pointer"
+                                  }
+                                />
+                              </PaginationItem>
+                              {Array.from(
+                                { length: totalSkillstormPages },
+                                (_, i) => i + 1
+                              ).map((page) => (
+                                <PaginationItem key={page}>
+                                  <PaginationLink
+                                    className="cursor-pointer"
+                                    onClick={() => handlePageChange(page)}
+                                    isActive={currentPage === page}
+                                  >
+                                    {page}
+                                  </PaginationLink>
+                                </PaginationItem>
+                              ))}
+                              <PaginationItem>
+                                <PaginationNext
+                                  onClick={() =>
+                                    handlePageChange(
+                                      currentPage < totalSkillstormPages
+                                        ? currentPage + 1
+                                        : totalSkillstormPages
+                                    )
+                                  }
+                                  className={
+                                    currentPage === totalSkillstormPages
+                                      ? "pointer-events-none opacity-50"
+                                      : "cursor-pointer"
+                                  }
+                                />
+                              </PaginationItem>
+                            </PaginationContent>
+                          </Pagination>
+                        </div>
+                      )}
+                  </div>
+                </CarouselItem>
+              </CarouselContent>
+            </Carousel>
           </div>
         </div>
       </div>
