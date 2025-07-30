@@ -4,17 +4,17 @@ import { Instagram, Linkedin } from "lucide-react";
 
 export default function Footer() {
   return (
-    <footer className="w-full bg-allcharcoal text-white px-10 py-10">
-      <div className="max-w-screen-2xl mx-auto grid md:grid-cols-2 gap-6 items-center">
-        <div className="cursor-default">
-          <h2 className="text-3xl text-gray-400 md:text-4xl font-semibold mb-2">
+    <footer className="w-full bg-allcharcoal text-white py-10 px-5 md:px-10">
+      <div className="w-full md:w-[75vw] mx-auto grid md:grid-cols-3 gap-6 items-center">
+        <div className="md:col-span-2 md:col-start-1 cursor-default">
+          <h2 className="text-3xl text-gray-400 lg:text-6xl font-semibold mb-2">
             Enhance your <span className="text-white font-bold">Growth</span>,
             <br />
             Inspire the <span className="text-white font-bold">Change</span>
           </h2>
         </div>
 
-        <div className="flex flex-col md:items-end gap-4">
+        <div className="md:col-start-3 flex flex-col md:items-end gap-4">
           <div className="flex gap-3">
             <button className="border border-white text-white px-6 py-3 rounded cursor-pointer hover:bg-white hover:text-black transition">
               Explore
@@ -26,7 +26,7 @@ export default function Footer() {
         </div>
       </div>
 
-      <div className="max-w-screen-2xl mx-auto mt-10 border-t border-gray-700 pt-4 flex justify-between items-center text-sm">
+      <div className="w-full md:w-[75vw] mx-auto mt-10 border-t border-gray-700 pt-4 flex justify-between items-center text-sm">
         <div className="flex items-center gap-2">
           <Image
             src="/images/allmaxd_logo_text_white.png"
