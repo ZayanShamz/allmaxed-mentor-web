@@ -250,7 +250,7 @@ export default function WorkshopDetailsPage() {
         }}
       >
         <Navbar />
-        <div className="max-w-screen-2xl flex items-center justify-start mx-auto h-full px-5">
+        <div className="w-full md:w-[75vw] flex items-center justify-start mx-auto h-full px-5">
           <div className="h-fit w-full flex items-center flex-wrap">
             <button
               onClick={handleBackNavigation}
@@ -271,7 +271,7 @@ export default function WorkshopDetailsPage() {
       </div>
 
       <section className="w-full bg-allsnowflake flex flex-col items-center justify-start py-10 md:py-20">
-        <div className="flex flex-col md:flex-row justify-between items-stretch w-[90vw] md:max-w-screen-xl md:gap-10">
+        <div className="flex flex-col md:flex-row justify-between items-stretch w-[90vw] md:w-[75vw] md:gap-10">
           {/* section card - first on mobile, right on desktop */}
           <div className="w-full md:w-auto md:min-w-[300px] md:max-w-[35%] md:order-2 bg-white rounded-lg flex flex-col items-start justify-center max-md:mb-5 p-5">
             <div className="mb-5">
