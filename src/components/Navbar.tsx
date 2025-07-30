@@ -62,10 +62,10 @@ export default function Navbar() {
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <nav
         className={`fixed w-full z-20 top-0 start-0 transition-all duration-300 ${
-          isScrolled ? "bg-allcharcoal p-3 " : "bg-transparent py-5"
+          isScrolled ? "bg-allcharcoal py-3" : "bg-transparent py-5"
         }`}
       >
-        <div className="max-w-screen-2xl flex flex-wrap items-center justify-between mx-auto px-5">
+        <div className="w-full md:w-[75vw] flex flex-wrap items-center justify-between mx-auto px-4">
           {/* Logo */}
           <Link
             href="/home"
@@ -76,7 +76,7 @@ export default function Navbar() {
               alt="AllMax'd Logo"
               width={100}
               height={100}
-              className="h-8 w-auto"
+              className="h-10 w-auto"
               priority
             />
           </Link>
@@ -144,12 +144,11 @@ export default function Navbar() {
               </DropdownMenu>
             </div>
 
-            {/* replace this avatar with the hamburger */}
             <div
               className="flex md:hidden cursor-pointer"
               onClick={handleMobileAvatarClick}
             >
-              <Menu color="white" />
+              <Menu color="white" size={32} />
             </div>
           </div>
 
