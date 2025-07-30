@@ -20,7 +20,7 @@ export default function PartneredColleges() {
         }}
       >
         <Navbar />
-        <div className="max-w-screen-2xl flex items-center justify-start mx-auto h-full px-5">
+        <div className="w-full md:w-[75vw] flex items-center justify-start mx-auto h-full px-5">
           <div className="h-fit w-full flex items-center">
             <Link
               href="/home"
@@ -36,7 +36,7 @@ export default function PartneredColleges() {
         </div>
       </div>
       <section className="min-h-dvh w-full flex justify-center py-10">
-        <div className="w-[90vw] md:w-[80vw] flex flex-col">
+        <div className="w-[90vw] md:w-[75vw] flex flex-col">
           <div className="text-h2 font-semibold py-10">Partenered Colleges</div>
           <div className="w-full bg-white rounded-md min-h-[200px]">
             <div className="container h-full p-10">
