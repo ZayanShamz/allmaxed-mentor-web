@@ -27,7 +27,7 @@ export default function ProfilePage() {
           backgroundRepeat: "no-repeat",
         }}
       >
-        <div className="max-w-screen-2xl flex items-center justify-start mx-auto h-full px-5">
+        <div className="w-full md:w-[75vw] flex items-center justify-start mx-auto h-full px-5 md:px-0">
           <div className="h-fit w-full flex items-center">
             <Link
               href="/home"
@@ -43,12 +43,12 @@ export default function ProfilePage() {
         </div>
       </div>
       <Navbar />
-      <div className="min-h-dvh w-full flex flex-col justify-center items-center">
-        <div className="grid grid-cols-1 lg:grid-cols-2 w-[90vw] lg:gap-10 justify-items-center my-5">
+      <div className="w-full flex flex-col justify-center items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 w-[90vw] md:w-[75vw] lg:gap-10 justify-items-center my-5">
           <div className="flex flex-col bg-white overflow-hidden shadow rounded-lg border w-full sm:w-[80%] md:w-[70%] lg:w-full my-10">
             {/* title */}
             <div className="px-6 py-5">
-              <div className="text-h3 leading-6 font-medium text-gray-900">
+              <div className="text-h3 leading-6 font-medium text-gray-900 cursor-default select-none">
                 Personal Information
               </div>
             </div>
@@ -56,7 +56,7 @@ export default function ProfilePage() {
             <div className="border-t border-gray-200 px-5 flex-1 flex">
               <dl className="flex flex-col justify-evenly w-full divide-y divide-gray-200">
                 <div className="py-3 grid grid-cols-3 gap-4 px-3">
-                  <dt className="text-body font-medium text-gray-500">
+                  <dt className="text-body font-medium text-gray-500 cursor-default">
                     Full name
                   </dt>
                   <dd className="mt-0 text-body text-gray-900 col-span-2">
@@ -70,7 +70,7 @@ export default function ProfilePage() {
                   </dd>
                 </div>
                 <div className="py-3 grid grid-cols-3 gap-4 px-3">
-                  <dt className="text-body font-medium text-gray-500">
+                  <dt className="text-body font-medium text-gray-500 cursor-default">
                     Gender
                   </dt>
                   <dd className="mt-0 text-body text-gray-900 col-span-2">
@@ -78,19 +78,23 @@ export default function ProfilePage() {
                   </dd>
                 </div>
                 <div className="py-3 grid grid-cols-3 gap-4 px-3">
-                  <dt className="text-body font-medium text-gray-500">phone</dt>
+                  <dt className="text-body font-medium text-gray-500 cursor-default">
+                    phone
+                  </dt>
                   <dd className="mt-0 text-body text-gray-900 col-span-2">
                     {userData?.phone}
                   </dd>
                 </div>
                 <div className="py-3 grid grid-cols-3 gap-4 px-3">
-                  <dt className="text-body font-medium text-gray-500">email</dt>
+                  <dt className="text-body font-medium text-gray-500 cursor-default">
+                    email
+                  </dt>
                   <dd className="mt-0 text-body text-gray-900 col-span-2">
                     {userData?.email}
                   </dd>
                 </div>
                 <div className="py-3 grid grid-cols-3 gap-4 px-3">
-                  <dt className="text-body font-medium text-gray-500">
+                  <dt className="text-body font-medium text-gray-500 cursor-default">
                     Address
                   </dt>
                   <dd className="mt-0 text-body text-gray-900 col-span-2">
@@ -98,13 +102,15 @@ export default function ProfilePage() {
                   </dd>
                 </div>
                 <div className="py-3 grid grid-cols-3 gap-4 px-3">
-                  <dt className="text-body font-medium text-gray-500">City</dt>
+                  <dt className="text-body font-medium text-gray-500  cursor-default">
+                    City
+                  </dt>
                   <dd className="mt-0 text-body text-gray-900 col-span-2">
                     {mentorData?.city}
                   </dd>
                 </div>
                 <div className="py-3 grid grid-cols-3 gap-4 px-3">
-                  <dt className="text-body font-medium text-gray-500">
+                  <dt className="text-body font-medium text-gray-500  cursor-default">
                     District
                   </dt>
                   <dd className="mt-0 text-body text-gray-900 col-span-2">
@@ -112,7 +118,9 @@ export default function ProfilePage() {
                   </dd>
                 </div>
                 <div className="py-3 grid grid-cols-3 gap-4 px-3">
-                  <dt className="text-body font-medium text-gray-500">State</dt>
+                  <dt className="text-body font-medium text-gray-500  cursor-default">
+                    State
+                  </dt>
                   <dd className="mt-0 text-body text-gray-900 col-span-2">
                     {mentorData?.state}
                   </dd>
@@ -125,14 +133,14 @@ export default function ProfilePage() {
           <div className="flex flex-col items-center h-full w-full">
             <div className="bg-white overflow-hidden shadow rounded-lg border w-full sm:w-[80%] md:w-[70%] lg:w-full my-10">
               <div className="px-6 py-5">
-                <div className="text-h3 leading-6 font-medium text-gray-900">
+                <div className="text-h3 leading-6 font-medium text-gray-900 cursor-default select-none">
                   Professional Information
                 </div>
               </div>
               <div className="border-t border-gray-200 px-5">
                 <dl className="divide-y divide-gray-200">
                   <div className="py-3 grid grid-cols-3 gap-4 px-3">
-                    <dt className="text-body font-medium text-gray-500">
+                    <dt className="text-body font-medium text-gray-500 cursor-default">
                       Expertice
                     </dt>
                     <dd className="mt-0 text-body text-gray-900 col-span-2">
@@ -140,7 +148,7 @@ export default function ProfilePage() {
                     </dd>
                   </div>
                   <div className="py-3 grid grid-cols-3 gap-4 px-3">
-                    <dt className="text-body font-medium text-gray-500">
+                    <dt className="text-body font-medium text-gray-500 cursor-default">
                       Experience
                     </dt>
                     <dd className="mt-0 text-body text-gray-900 col-span-2">
@@ -148,7 +156,7 @@ export default function ProfilePage() {
                     </dd>
                   </div>
                   <div className="py-3 grid grid-cols-3 gap-4 px-3">
-                    <dt className="text-body font-medium text-gray-500">
+                    <dt className="text-body font-medium text-gray-500 cursor-default">
                       Occupation
                     </dt>
                     <dd className="mt-0 text-body text-gray-900 col-span-2">
@@ -156,7 +164,7 @@ export default function ProfilePage() {
                     </dd>
                   </div>
                   <div className="py-3 grid grid-cols-3 gap-4 px-3">
-                    <dt className="text-body font-medium text-gray-500">
+                    <dt className="text-body font-medium text-gray-500 cursor-default">
                       Designation
                     </dt>
                     <dd className="mt-0 text-body text-gray-900 col-span-2">
@@ -164,7 +172,7 @@ export default function ProfilePage() {
                     </dd>
                   </div>
                   <div className="py-3 grid grid-cols-3 gap-4 px-3">
-                    <dt className="text-body font-medium text-gray-500">
+                    <dt className="text-body font-medium text-gray-500 cursor-default">
                       Duration
                     </dt>
                     <dd className="mt-0 text-body text-gray-900 col-span-2">
@@ -176,14 +184,14 @@ export default function ProfilePage() {
             </div>
             <div className="bg-white overflow-hidden shadow rounded-lg border w-full sm:w-[80%] md:w-[70%] lg:w-full lg:mt-auto my-10">
               <div className="px-6 py-5">
-                <div className="text-h3 leading-6 font-medium text-gray-900">
+                <div className="text-h3 leading-6 font-medium text-gray-900 cursor-default select-none">
                   Social Links
                 </div>
               </div>
               <div className="border-t border-gray-200 px-5">
                 <dl className="divide-y divide-gray-200">
                   <div className="py-3 grid grid-cols-3 gap-4 px-3">
-                    <dt className="text-body font-medium text-gray-500">
+                    <dt className="text-body font-medium text-gray-500 cursor-default">
                       Portfolio
                     </dt>
                     <dd className="mt-0 text-body text-gray-900 col-span-2 line-clamp-1">
@@ -205,7 +213,7 @@ export default function ProfilePage() {
                     </dd>
                   </div>
                   <div className="py-3 grid grid-cols-3 gap-4 px-3">
-                    <dt className="text-body font-medium text-gray-500">
+                    <dt className="text-body font-medium text-gray-500 cursor-default">
                       Social Media
                     </dt>
                     <dd className="mt-0 text-body text-gray-900 col-span-2 line-clamp-1">
@@ -243,7 +251,6 @@ export default function ProfilePage() {
             </div>
           </div>
         </div>
-        <div className="flex justify-center w-[90vw] mb-10"></div>
       </div>
       <Footer />
     </>

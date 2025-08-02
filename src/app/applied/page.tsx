@@ -264,7 +264,7 @@ export default function Appliedpage() {
           backgroundRepeat: "no-repeat",
         }}
       >
-        <div className="w-full md:w-[75vw] flex items-center justify-start mx-auto h-full px-5">
+        <div className="w-full md:w-[75vw] flex items-center justify-start mx-auto h-full px-5 md:px-0">
           <div className="h-fit w-full flex items-center">
             <Link
               href="/home"

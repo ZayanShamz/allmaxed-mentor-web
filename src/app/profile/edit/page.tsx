@@ -273,7 +273,7 @@ export default function EditProfile() {
           backgroundRepeat: "no-repeat",
         }}
       >
-        <div className="max-w-screen-2xl flex items-center justify-start mx-auto h-full px-5">
+        <div className="w-full md:w-[75vw] flex items-center justify-start mx-auto h-full px-5 md:px-0">
           <div className="h-fit w-full flex items-center">
             <Link
               href="/home"
@@ -350,11 +350,11 @@ export default function EditProfile() {
                       </Tooltip.Root>
                       {portfolioLink && (
                         <span
-                          className="absolute right-1 p-3 rounded-2xl top-1/2 transform -translate-y-1/2 cursor-pointer text-allcharcoal hover:bg-gray-100"
+                          className="absolute right-1 p-3 rounded-2xl top-1/2 transform -translate-y-1/2 cursor-pointer"
                           onClick={handleClearPortfolio}
                           aria-hidden="true"
                         >
-                          <X className="w-4 h-4 text-gray-500 hover:text-gray-700" />
+                          <X className="w-4 h-4 text-gray-500 hover:text-allcharcoal" />
                         </span>
                       )}
                     </dd>
@@ -399,11 +399,11 @@ export default function EditProfile() {
                       </Tooltip.Root>
                       {socialMediaLink && (
                         <span
-                          className="absolute right-1 p-3 rounded-2xl top-1/2 transform -translate-y-1/2 cursor-pointer text-allcharcoal hover:bg-gray-100"
+                          className="absolute right-1 p-3 rounded-2xl top-1/2 transform -translate-y-1/2 cursor-pointer"
                           onClick={handleClearSocialMedia}
                           aria-hidden="true"
                         >
-                          <X className="w-4 h-4 text-gray-500 hover:text-gray-700" />
+                          <X className="w-4 h-4 text-gray-500 hover:text-allcharcoal" />
                         </span>
                       )}
                     </dd>
