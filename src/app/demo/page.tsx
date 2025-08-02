@@ -23,6 +23,14 @@ import {
   CarouselItem,
   type CarouselApi,
 } from "@/components/ui/carousel";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 
 interface AllmaxedData {
   id: string;
@@ -281,7 +289,48 @@ export default function Appliedpage() {
       </div>
       <Navbar />
       <div className="min-h-dvh w-full flex flex-col justify-start items-center py-10">
-        <div className="w-full flex justify-center">
+        <div className="w-full flex flex-col justify-center items-center">
+          <div className="bg-white border rounded-md p-5 my-8">
+            <div className="hidden md:flex gap-4 items-center">
+              <div className="flex flex-1 bg-[#EBE8FF] rounded-sm overflow-hidden min-w-0 py-2 items-center">
+                <div className="flex-1 min-w-0 border-r-2 border-gray-300">
+                  <Select>
+                    <SelectTrigger className="w-full px-5 py-3 bg-transparent border-none rounded-none text-allcharcoal text-md shadow-none hover:bg-purple-150 focus:ring-0 focus:border-none cursor-pointer">
+                      <SelectValue placeholder="Select Category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="allmaxed">Allmax&apos;d</SelectItem>
+                      <SelectItem value="skillstorm">Skillstorm</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <Select>
+                    <SelectTrigger className="w-full px-5 py-3 bg-transparent border-none rounded-none text-allcharcoal text-md shadow-none hover:bg-purple-150 focus:ring-0 focus:border-none cursor-pointer">
+                      <SelectValue placeholder="Select Course Level" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="beginner">Beginner Level</SelectItem>
+                      <SelectItem value="intermediate">
+                        Intermediate Level
+                      </SelectItem>
+                      <SelectItem value="advanced">Advanced Level</SelectItem>
+                      <SelectItem value="certification">
+                        Certification
+                      </SelectItem>
+                      <SelectItem value="workshop">Workshop</SelectItem>
+                      <SelectItem value="bootcamp">Bootcamp</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="flex-shrink-0">
+                <Button className="py-6 px-8 bg-allpurple hover:bg-indigo-700 text-white rounded-sm transition-colors duration-200 shadow-none border-0 cursor-pointer">
+                  Search
+                </Button>
+              </div>
+            </div>
+          </div>
           <div className="w-[70%] sm:w-[40%] lg:w-[30%] bg-white border rounded-md p-3">
             <div className="grid grid-cols-2 bg-[#EBE8FF] rounded-sm overflow-hidden items-center p-1 relative">
               {/* Slider */}
