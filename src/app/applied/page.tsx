@@ -178,7 +178,7 @@ export default function Appliedpage() {
     const handleSelect = () => {
       const slideIndex = api.selectedScrollSnap();
       setActiveTab(slideIndex === 0 ? "allmaxed" : "skillstorm");
-      // setCurrentPage(1); // Reset pagination on tab change
+      setCurrentPage(1); // Reset pagination on tab change
     };
 
     api.on("select", handleSelect);
@@ -190,7 +190,7 @@ export default function Appliedpage() {
 
   const handleTabChange = (tab: "allmaxed" | "skillstorm") => {
     setActiveTab(tab);
-    // setCurrentPage(1); // Reset pagination
+    setCurrentPage(1); // Reset pagination
     if (api) {
       api.scrollTo(tab === "allmaxed" ? 0 : 1);
     }
